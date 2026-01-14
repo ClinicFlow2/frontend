@@ -1,3 +1,4 @@
+// src/pages/Patients.jsx
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { getPatients, createPatient } from "../api/patients";
@@ -9,6 +10,13 @@ export default function Patients() {
   // Search
   const [query, setQuery] = useState("");
 
+  // Pagination
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [count, setCount] = useState(0);
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrev, setHasPrev] = useState(false);
+
   // form fields
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -17,23 +25,42 @@ export default function Patients() {
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [address, setAddress] = useState("");
 
-  async function loadPatients() {
+  async function loadPatients(pageToLoad = page, q = query, size = pageSize) {
     setLoading(true);
     try {
-      const data = await getPatients();
-      setPatients(Array.isArray(data) ? data : []);
+      const data = await getPatients({
+        page: pageToLoad,
+        pageSize: size,
+        search: q.trim(),
+      });
+
+      setPatients(Array.isArray(data?.results) ? data.results : []);
+      setCount(typeof data?.count === "number" ? data.count : 0);
+      setHasNext(!!data?.next);
+      setHasPrev(!!data?.previous);
+      setPage(pageToLoad);
     } catch (err) {
       console.log("GET PATIENTS ERROR:", err?.response?.data || err);
       alert("❌ Failed to fetch patients.");
       setPatients([]);
+      setCount(0);
+      setHasNext(false);
+      setHasPrev(false);
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    loadPatients();
+    loadPatients(1, query, pageSize);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // When pageSize changes, reload page 1
+  useEffect(() => {
+    loadPatients(1, query, pageSize);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageSize]);
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -57,7 +84,9 @@ export default function Patients() {
       setAddress("");
 
       alert("✅ Patient created!");
-      await loadPatients();
+
+      // Reload first page so user sees it immediately (ordering is last_name/first_name)
+      await loadPatients(1, query, pageSize);
     } catch (err) {
       console.log("CREATE PATIENT ERROR:", err?.response?.data || err);
       alert(
@@ -67,6 +96,7 @@ export default function Patients() {
     }
   };
 
+  // Optional: keep client-side filtering for current page
   const filteredPatients = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return patients;
@@ -80,6 +110,7 @@ export default function Patients() {
         p.address,
         p.sex,
         p.date_of_birth,
+        p.last_visit_date, // include in search too (safe)
       ]
         .filter(Boolean)
         .join(" ")
@@ -89,6 +120,10 @@ export default function Patients() {
     });
   }, [patients, query]);
 
+  const totalPages = Math.max(1, Math.ceil(count / pageSize));
+  const startIndex = count === 0 ? 0 : (page - 1) * pageSize + 1;
+  const endIndex = Math.min(page * pageSize, count);
+
   if (loading) return <p style={{ marginTop: 20 }}>Loading patients...</p>;
 
   return (
@@ -96,7 +131,7 @@ export default function Patients() {
       <div style={{ display: "flex", alignItems: "baseline", gap: 12 }}>
         <h2 style={{ margin: 0 }}>Patients</h2>
         <span style={{ color: "#666" }}>
-          {filteredPatients.length} / {patients.length}
+          Showing {startIndex}-{endIndex} of {count}
         </span>
       </div>
 
@@ -113,21 +148,68 @@ export default function Patients() {
             borderRadius: 8,
           }}
         />
-        {query.trim() && (
+
+        <div
+          style={{
+            display: "flex",
+            gap: 10,
+            marginTop: 10,
+            alignItems: "center",
+          }}
+        >
           <button
-            onClick={() => setQuery("")}
+            onClick={() => loadPatients(1, query, pageSize)}
             style={{
-              marginTop: 8,
               padding: "8px 10px",
               borderRadius: 8,
               border: "1px solid #ddd",
               background: "white",
               cursor: "pointer",
+              fontWeight: 600,
             }}
           >
-            Clear search
+            Search
           </button>
-        )}
+
+          {query.trim() && (
+            <button
+              onClick={() => {
+                setQuery("");
+                loadPatients(1, "", pageSize);
+              }}
+              style={{
+                padding: "8px 10px",
+                borderRadius: 8,
+                border: "1px solid #ddd",
+                background: "white",
+                cursor: "pointer",
+              }}
+            >
+              Clear
+            </button>
+          )}
+
+          <div
+            style={{
+              marginLeft: "auto",
+              display: "flex",
+              gap: 8,
+              alignItems: "center",
+            }}
+          >
+            <span style={{ color: "#666", fontSize: 13 }}>Per page</span>
+            <select
+              value={pageSize}
+              onChange={(e) => setPageSize(Number(e.target.value))}
+              style={{ padding: 8, borderRadius: 8, border: "1px solid #ddd" }}
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       {/* Create Patient */}
@@ -161,7 +243,14 @@ export default function Patients() {
           />
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 10 }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 10,
+            marginTop: 10,
+          }}
+        >
           <select
             value={sex}
             onChange={(e) => setSex(e.target.value)}
@@ -180,7 +269,14 @@ export default function Patients() {
           />
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 10 }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 10,
+            marginTop: 10,
+          }}
+        >
           <input
             type="date"
             value={dateOfBirth}
@@ -215,6 +311,50 @@ export default function Patients() {
         </button>
       </form>
 
+      {/* Pagination controls */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          marginBottom: 12,
+        }}
+      >
+        <button
+          disabled={!hasPrev}
+          onClick={() => loadPatients(page - 1, query, pageSize)}
+          style={pagerBtn(!hasPrev)}
+        >
+          ← Previous
+        </button>
+
+        <div style={{ color: "#666", fontSize: 13 }}>
+          Page <b>{page}</b> of <b>{totalPages}</b>
+        </div>
+
+        <button
+          disabled={!hasNext}
+          onClick={() => loadPatients(page + 1, query, pageSize)}
+          style={pagerBtn(!hasNext)}
+        >
+          Next →
+        </button>
+
+        <button
+          onClick={() => loadPatients(page, query, pageSize)}
+          style={{
+            marginLeft: "auto",
+            padding: "10px 12px",
+            borderRadius: 10,
+            border: "1px solid #ddd",
+            background: "white",
+            cursor: "pointer",
+          }}
+        >
+          Refresh
+        </button>
+      </div>
+
       {/* Table */}
       {filteredPatients.length === 0 ? (
         <p style={{ color: "#666" }}>No patients found.</p>
@@ -234,6 +374,7 @@ export default function Patients() {
                 <th style={th}>Name</th>
                 <th style={th}>Sex</th>
                 <th style={th}>DOB</th>
+                <th style={th}>Last visit</th>
                 <th style={th}>Phone</th>
                 <th style={th}>Address</th>
                 <th style={th}>Actions</th>
@@ -246,13 +387,18 @@ export default function Patients() {
                   <td style={td}>
                     <Link
                       to={`/patients/${p.id}`}
-                      style={{ color: "#2a5bd7", textDecoration: "none", fontWeight: 600 }}
+                      style={{
+                        color: "#2a5bd7",
+                        textDecoration: "none",
+                        fontWeight: 600,
+                      }}
                     >
                       {p.first_name} {p.last_name}
                     </Link>
                   </td>
                   <td style={td}>{p.sex || "-"}</td>
                   <td style={td}>{p.date_of_birth || "-"}</td>
+                  <td style={td}>{p.last_visit_date || "-"}</td>
                   <td style={td}>{p.phone || "-"}</td>
                   <td style={td}>{p.address || "-"}</td>
                   <td style={td}>
@@ -277,22 +423,6 @@ export default function Patients() {
           </table>
         </div>
       )}
-
-      {/* Refresh button */}
-      <div style={{ marginTop: 12 }}>
-        <button
-          onClick={loadPatients}
-          style={{
-            padding: "10px 12px",
-            borderRadius: 10,
-            border: "1px solid #ddd",
-            background: "white",
-            cursor: "pointer",
-          }}
-        >
-          Refresh list
-        </button>
-      </div>
     </div>
   );
 }
@@ -310,3 +440,14 @@ const td = {
   padding: "12px 12px",
   verticalAlign: "top",
 };
+
+function pagerBtn(disabled) {
+  return {
+    padding: "10px 12px",
+    borderRadius: 10,
+    border: "1px solid #ddd",
+    background: disabled ? "#f2f2f2" : "white",
+    cursor: disabled ? "not-allowed" : "pointer",
+    opacity: disabled ? 0.6 : 1,
+  };
+}
