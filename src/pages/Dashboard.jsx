@@ -48,7 +48,7 @@ export default function Dashboard() {
         />
         <Card
           title="Visits"
-          description="Consultation workflow (next)"
+          description="Consultation workflow"
           to="/visits"
         />
         <Card

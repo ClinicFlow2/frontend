@@ -1,3 +1,4 @@
+// src/layouts/DashboardLayout.jsx
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { logout } from "../api/auth";
 
@@ -11,8 +12,24 @@ const linkStyle = ({ isActive }) => ({
   fontWeight: isActive ? 700 : 500,
 });
 
+const disabledStyle = {
+  display: "block",
+  padding: "10px 12px",
+  borderRadius: 10,
+  textDecoration: "none",
+  color: "#999",
+  background: "transparent",
+  fontWeight: 500,
+  cursor: "not-allowed",
+  userSelect: "none",
+};
+
 export default function DashboardLayout() {
   const navigate = useNavigate();
+
+  function comingSoon(message) {
+    alert(message);
+  }
 
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
@@ -36,18 +53,53 @@ export default function DashboardLayout() {
             Patients
           </NavLink>
 
-          {/* Add later */}
-          <NavLink to="/appointments" style={linkStyle}>
-            Appointments (soon)
-          </NavLink>
-
+          {/* ✅ Visits module is now available */}
           <NavLink to="/visits" style={linkStyle}>
-            Visits (soon)
+            Visits
           </NavLink>
 
-          <NavLink to="/prescriptions" style={linkStyle}>
+          {/* Coming soon */}
+          <span
+            style={disabledStyle}
+            title="Coming soon"
+            onClick={() =>
+              comingSoon(
+                "Appointments module is coming soon.\n\nFor now: open a patient, then use the patient workflow."
+              )
+            }
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                comingSoon(
+                  "Appointments module is coming soon.\n\nFor now: open a patient, then use the patient workflow."
+                );
+              }
+            }}
+          >
+            Appointments (soon)
+          </span>
+
+          <span
+            style={disabledStyle}
+            title="Coming soon"
+            onClick={() =>
+              comingSoon(
+                "Prescriptions module is coming soon.\n\nFor now: open a patient to work in the patient flow."
+              )
+            }
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                comingSoon(
+                  "Prescriptions module is coming soon.\n\nFor now: open a patient to work in the patient flow."
+                );
+              }
+            }}
+          >
             Prescriptions (soon)
-          </NavLink>
+          </span>
         </nav>
 
         <div style={{ marginTop: 18 }}>

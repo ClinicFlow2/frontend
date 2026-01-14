@@ -1,6 +1,6 @@
 // src/pages/PatientDetail.jsx
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { getPatient, updatePatient } from "../api/patients";
 
 export default function PatientDetail() {
@@ -87,18 +87,26 @@ export default function PatientDetail() {
     <div style={{ padding: 20 }}>
       <button onClick={() => navigate("/patients")}>← Back</button>
 
-      <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginTop: 14 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "baseline",
+          gap: 12,
+          marginTop: 14,
+        }}
+      >
         <h2 style={{ margin: 0 }}>
           {patient.first_name} {patient.last_name}
         </h2>
         <span style={{ color: "#666" }}>{patient.patient_code || "-"}</span>
 
         <div style={{ marginLeft: "auto", display: "flex", gap: 10 }}>
+          <Link to={`/patients/${id}/visits`} style={linkBtn}>
+            Visits
+          </Link>
+
           {!editing ? (
-            <button
-              onClick={() => setEditing(true)}
-              style={btn}
-            >
+            <button onClick={() => setEditing(true)} style={btn}>
               Edit
             </button>
           ) : (
@@ -136,14 +144,28 @@ export default function PatientDetail() {
       {/* VIEW MODE */}
       {!editing && (
         <div style={{ marginTop: 12, lineHeight: 1.9 }}>
-          <div><b>Patient code:</b> {patient.patient_code || "-"}</div>
-          <div><b>Sex:</b> {patient.sex || "-"}</div>
-          <div><b>Date of birth:</b> {patient.date_of_birth || "-"}</div>
-          <div><b>Phone:</b> {patient.phone || "-"}</div>
-          <div><b>Address:</b> {patient.address || "-"}</div>
+          <div>
+            <b>Patient code:</b> {patient.patient_code || "-"}
+          </div>
+          <div>
+            <b>Sex:</b> {patient.sex || "-"}
+          </div>
+          <div>
+            <b>Date of birth:</b> {patient.date_of_birth || "-"}
+          </div>
+          <div>
+            <b>Phone:</b> {patient.phone || "-"}
+          </div>
+          <div>
+            <b>Address:</b> {patient.address || "-"}
+          </div>
 
-          {/* Future field (once backend provides it) */}
-          <div><b>Last visit:</b> {patient.last_visit_date || "-"}</div>
+          <div>
+            <b>Last visit:</b> {patient.last_visit_date || "-"}
+          </div>
+          <div>
+            <b>Next visit:</b> {patient.next_visit_date || "-"}
+          </div>
         </div>
       )}
 
@@ -165,21 +187,32 @@ export default function PatientDetail() {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             <input
               value={form.first_name}
-              onChange={(e) => setForm((f) => ({ ...f, first_name: e.target.value }))}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, first_name: e.target.value }))
+              }
               placeholder="First name"
               required
               style={input}
             />
             <input
               value={form.last_name}
-              onChange={(e) => setForm((f) => ({ ...f, last_name: e.target.value }))}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, last_name: e.target.value }))
+              }
               placeholder="Last name"
               required
               style={input}
             />
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 10 }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 10,
+              marginTop: 10,
+            }}
+          >
             <select
               value={form.sex}
               onChange={(e) => setForm((f) => ({ ...f, sex: e.target.value }))}
@@ -198,18 +231,29 @@ export default function PatientDetail() {
             />
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 10 }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 10,
+              marginTop: 10,
+            }}
+          >
             <input
               type="date"
               value={form.date_of_birth}
-              onChange={(e) => setForm((f) => ({ ...f, date_of_birth: e.target.value }))}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, date_of_birth: e.target.value }))
+              }
               required
               style={input}
             />
 
             <input
               value={form.address}
-              onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, address: e.target.value }))
+              }
               placeholder="Address"
               required
               style={input}
@@ -244,6 +288,13 @@ const btn = {
   border: "1px solid #ddd",
   background: "white",
   cursor: "pointer",
+};
+
+const linkBtn = {
+  ...btn,
+  textDecoration: "none",
+  color: "#111",
+  display: "inline-block",
 };
 
 const input = {

@@ -110,7 +110,8 @@ export default function Patients() {
         p.address,
         p.sex,
         p.date_of_birth,
-        p.last_visit_date, // include in search too (safe)
+        p.last_visit_date,
+        p.next_visit_date,
       ]
         .filter(Boolean)
         .join(" ")
@@ -375,6 +376,7 @@ export default function Patients() {
                 <th style={th}>Sex</th>
                 <th style={th}>DOB</th>
                 <th style={th}>Last visit</th>
+                <th style={th}>Next visit</th>
                 <th style={th}>Phone</th>
                 <th style={th}>Address</th>
                 <th style={th}>Actions</th>
@@ -384,6 +386,7 @@ export default function Patients() {
               {filteredPatients.map((p) => (
                 <tr key={p.id} style={{ borderTop: "1px solid #eee" }}>
                   <td style={td}>{p.patient_code || "-"}</td>
+
                   <td style={td}>
                     <Link
                       to={`/patients/${p.id}`}
@@ -396,26 +399,24 @@ export default function Patients() {
                       {p.first_name} {p.last_name}
                     </Link>
                   </td>
+
                   <td style={td}>{p.sex || "-"}</td>
                   <td style={td}>{p.date_of_birth || "-"}</td>
                   <td style={td}>{p.last_visit_date || "-"}</td>
+                  <td style={td}>{p.next_visit_date || "-"}</td>
                   <td style={td}>{p.phone || "-"}</td>
                   <td style={td}>{p.address || "-"}</td>
+
                   <td style={td}>
-                    <Link
-                      to={`/patients/${p.id}`}
-                      style={{
-                        display: "inline-block",
-                        padding: "6px 10px",
-                        borderRadius: 8,
-                        border: "1px solid #ddd",
-                        background: "white",
-                        textDecoration: "none",
-                        color: "#111",
-                      }}
-                    >
-                      View
-                    </Link>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      <Link to={`/patients/${p.id}`} style={actionLink}>
+                        View
+                      </Link>
+
+                      <Link to={`/patients/${p.id}/visits`} style={actionLink}>
+                        Visits
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -439,6 +440,16 @@ const th = {
 const td = {
   padding: "12px 12px",
   verticalAlign: "top",
+};
+
+const actionLink = {
+  display: "inline-block",
+  padding: "6px 10px",
+  borderRadius: 8,
+  border: "1px solid #ddd",
+  background: "white",
+  textDecoration: "none",
+  color: "#111",
 };
 
 function pagerBtn(disabled) {

@@ -1,3 +1,4 @@
+// src/routes.jsx
 import { Routes, Route, Navigate } from "react-router-dom";
 import RequireAuth from "./auth/RequireAuth";
 
@@ -6,6 +7,9 @@ import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Patients from "./pages/Patients";
 import PatientDetail from "./pages/PatientDetail";
+import PatientVisits from "./pages/PatientVisits";
+import VisitDetail from "./pages/VisitDetail";
+import Visits from "./pages/Visits";
 import NotFound from "./pages/NotFound";
 
 export default function AppRoutes() {
@@ -23,7 +27,6 @@ export default function AppRoutes() {
           </RequireAuth>
         }
       >
-        {/* Default route inside dashboard */}
         <Route index element={<Navigate to="/dashboard" replace />} />
 
         <Route path="dashboard" element={<Dashboard />} />
@@ -31,10 +34,14 @@ export default function AppRoutes() {
         <Route path="patients" element={<Patients />} />
         <Route path="patients/:id" element={<PatientDetail />} />
 
-        {/* You’ll add these later */}
-        {/* <Route path="appointments" element={<Appointments />} /> */}
-        {/* <Route path="visits" element={<Visits />} /> */}
-        {/* <Route path="prescriptions" element={<Prescriptions />} /> */}
+        {/* ✅ Global Visits module */}
+        <Route path="visits" element={<Visits />} />
+
+        {/* ✅ Per-patient visits */}
+        <Route path="patients/:id/visits" element={<PatientVisits />} />
+
+        {/* ✅ Visit detail + vitals */}
+        <Route path="patients/:id/visits/:visitId" element={<VisitDetail />} />
       </Route>
 
       {/* 404 */}
