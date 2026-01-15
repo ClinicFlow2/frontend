@@ -58,6 +58,11 @@ export default function DashboardLayout() {
             Visits
           </NavLink>
 
+          {/* ✅ Prescriptions module is now available */}
+          <NavLink to="/prescriptions" style={linkStyle}>
+            Prescriptions
+          </NavLink>
+
           {/* Coming soon */}
           <span
             style={disabledStyle}
@@ -78,27 +83,6 @@ export default function DashboardLayout() {
             }}
           >
             Appointments (soon)
-          </span>
-
-          <span
-            style={disabledStyle}
-            title="Coming soon"
-            onClick={() =>
-              comingSoon(
-                "Prescriptions module is coming soon.\n\nFor now: open a patient to work in the patient flow."
-              )
-            }
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                comingSoon(
-                  "Prescriptions module is coming soon.\n\nFor now: open a patient to work in the patient flow."
-                );
-              }
-            }}
-          >
-            Prescriptions (soon)
           </span>
         </nav>
 

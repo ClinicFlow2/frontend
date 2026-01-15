@@ -10,6 +10,7 @@ import PatientDetail from "./pages/PatientDetail";
 import PatientVisits from "./pages/PatientVisits";
 import VisitDetail from "./pages/VisitDetail";
 import Visits from "./pages/Visits";
+import Prescriptions from "./pages/Prescriptions";
 import NotFound from "./pages/NotFound";
 
 export default function AppRoutes() {
@@ -36,6 +37,9 @@ export default function AppRoutes() {
 
         {/* ✅ Global Visits module */}
         <Route path="visits" element={<Visits />} />
+
+        {/* ✅ Prescriptions module */}
+        <Route path="prescriptions" element={<Prescriptions />} />
 
         {/* ✅ Per-patient visits */}
         <Route path="patients/:id/visits" element={<PatientVisits />} />

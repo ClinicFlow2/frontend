@@ -1,3 +1,4 @@
+// src/pages/Dashboard.jsx
 import { Link } from "react-router-dom";
 
 function Card({ title, description, to }) {
@@ -24,9 +25,7 @@ export default function Dashboard() {
   return (
     <div>
       <h1 style={{ marginTop: 0 }}>Dashboard</h1>
-      <p style={{ color: "#555" }}>
-        Welcome 👋 Pick a module from the sidebar.
-      </p>
+      <p style={{ color: "#555" }}>Welcome 👋 Pick a module from the sidebar.</p>
 
       <div
         style={{
@@ -36,26 +35,15 @@ export default function Dashboard() {
           marginTop: 16,
         }}
       >
-        <Card
-          title="Patients"
-          description="Create and manage patients"
-          to="/patients"
-        />
-        <Card
-          title="Appointments"
-          description="Agenda & scheduling (next)"
-          to="/appointments"
-        />
-        <Card
-          title="Visits"
-          description="Consultation workflow"
-          to="/visits"
-        />
-        <Card
-          title="Prescriptions"
-          description="Templates + items (next)"
-          to="/prescriptions"
-        />
+        <Card title="Patients" description="Create and manage patients" to="/patients" />
+
+        {/* Keep as "coming soon" until you build the page/route */}
+        <Card title="Appointments" description="Agenda & scheduling (next)" to="/appointments" />
+
+        <Card title="Visits" description="Consultation workflow" to="/visits" />
+
+        {/* ✅ Now live */}
+        <Card title="Prescriptions" description="Templates + items" to="/prescriptions" />
       </div>
     </div>
   );
