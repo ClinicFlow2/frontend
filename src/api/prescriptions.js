@@ -67,7 +67,7 @@ export async function deletePrescription(prescriptionId) {
 // PDF URL helper (debug / copy-paste in backend tools).
 // ⚠️ Opening this URL directly in a browser will NOT include JWT => 401.
 export function getPrescriptionPdfUrl(prescriptionId) {
-  const base = api.defaults.baseURL || "http://127.0.0.1:8000";
+  const base = import.meta.env.VITE_API_URL;
   return `${base}/api/prescriptions/${prescriptionId}/pdf/`;
 }
 
