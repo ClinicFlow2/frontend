@@ -2,9 +2,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "../api/auth";
+import "./Login.css";
 
 export default function Login() {
   const navigate = useNavigate();
+
   const [username, setUsername] = useState("admin");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -31,40 +33,50 @@ export default function Login() {
   }
 
   return (
-    <div style={{ maxWidth: 420, margin: "80px auto", padding: 16 }}>
-      <h2>ClinicFlow Login</h2>
-
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginTop: 12 }}>
-          <label>Username</label>
-          <input
-            style={{ width: "100%", padding: 10, marginTop: 6 }}
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            autoComplete="username"
+    <div className="login-page">
+      <div className="login-card">
+        <div className="login-header">
+          <img
+            src="/logo.png"
+            alt="ClinicFlowHQ"
+            className="login-logo"
+            draggable="false"
           />
         </div>
 
-        <div style={{ marginTop: 12 }}>
-          <label>Password</label>
-          <input
-            style={{ width: "100%", padding: 10, marginTop: 6 }}
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete="current-password"
-          />
-        </div>
+        <form onSubmit={handleSubmit} className="login-form">
+          <div className="field">
+            <label className="label">Username</label>
+            <input
+              className="input"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              autoComplete="username"
+              placeholder="Enter username"
+            />
+          </div>
 
-        {error && <p style={{ color: "crimson", marginTop: 12 }}>{error}</p>}
+          <div className="field">
+            <label className="label">Password</label>
+            <input
+              className="input"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+              placeholder="Enter password"
+            />
+          </div>
 
-        <button
-          style={{ marginTop: 14, padding: "10px 14px", width: "100%" }}
-          disabled={loading}
-        >
-          {loading ? "Logging in..." : "Login"}
-        </button>
-      </form>
+          {error ? <div className="error">{error}</div> : null}
+
+          <button className="btn" disabled={loading}>
+            {loading ? "Logging in..." : "Login"}
+          </button>
+        </form>
+
+        <div className="footer">© {new Date().getFullYear()} ClinicFlowHQ</div>
+      </div>
     </div>
   );
 }

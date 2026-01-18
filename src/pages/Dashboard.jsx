@@ -1,4 +1,3 @@
-// src/pages/Dashboard.jsx
 import { Link } from "react-router-dom";
 
 function Card({ title, description, to }) {
@@ -36,14 +35,9 @@ export default function Dashboard() {
         }}
       >
         <Card title="Patients" description="Create and manage patients" to="/patients" />
-
-        {/* Keep as "coming soon" until you build the page/route */}
-        <Card title="Appointments" description="Agenda & scheduling (next)" to="/appointments" />
-
         <Card title="Visits" description="Consultation workflow" to="/visits" />
-
-        {/* ✅ Now live */}
         <Card title="Prescriptions" description="Templates + items" to="/prescriptions" />
+        <Card title="Appointments" description="Scheduling + agenda (next)" to="/appointments" />
       </div>
     </div>
   );

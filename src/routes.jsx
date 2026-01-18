@@ -13,6 +13,16 @@ import Visits from "./pages/Visits";
 import Prescriptions from "./pages/Prescriptions";
 import NotFound from "./pages/NotFound";
 
+// Placeholder until you implement it
+function AppointmentsPlaceholder() {
+  return (
+    <div>
+      <h1 style={{ marginTop: 0 }}>Appointments</h1>
+      <p>This module is next: scheduling + daily agenda.</p>
+    </div>
+  );
+}
+
 export default function AppRoutes() {
   return (
     <Routes>
@@ -38,14 +48,17 @@ export default function AppRoutes() {
         {/* ✅ Global Visits module */}
         <Route path="visits" element={<Visits />} />
 
-        {/* ✅ Prescriptions module */}
-        <Route path="prescriptions" element={<Prescriptions />} />
-
         {/* ✅ Per-patient visits */}
         <Route path="patients/:id/visits" element={<PatientVisits />} />
 
         {/* ✅ Visit detail + vitals */}
         <Route path="patients/:id/visits/:visitId" element={<VisitDetail />} />
+
+        {/* ✅ Prescriptions */}
+        <Route path="prescriptions" element={<Prescriptions />} />
+
+        {/* ✅ Appointments (placeholder for now) */}
+        <Route path="appointments" element={<AppointmentsPlaceholder />} />
       </Route>
 
       {/* 404 */}

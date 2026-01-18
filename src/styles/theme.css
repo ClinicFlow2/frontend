@@ -1,0 +1,141 @@
+/* src/styles/theme.css */
+
+/* ---------- Theme tokens ---------- */
+:root {
+  /* Logo / brand accent (green) */
+  --accent: #41b66a;          /* primary button in LIGHT mode */
+  --accent-2: #2f9a55;        /* hover */
+  --accentText: #ffffff;
+
+  /* LIGHT */
+  --bg: #f6f8fb;
+  --sidebar: #ffffff;
+  --card: #ffffff;
+  --surface: #fbfcff;
+
+  --text: #0b1220;
+  --muted: #5b6678;
+
+  --border: #e6e9ef;
+
+  --inputBg: #ffffff;
+  --inputText: #0b1220;
+  --placeholder: #98a2b3;
+
+  --shadow: 0 10px 30px rgba(16, 24, 40, 0.06);
+}
+
+:root[data-theme="dark"] {
+  /* DARK */
+  --bg: #060b14;
+  --sidebar: #0a1020;
+  --card: #0c1326;
+  --surface: #0f1930;
+
+  --text: #e9eef8;     /* silvery white */
+  --muted: #a9b4c7;
+
+  --border: #1a2742;
+
+  --inputBg: #0f1930;
+  --inputText: #e9eef8;
+  --placeholder: #7f8aa3;
+
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* ---------- App base ---------- */
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Remove default blue links everywhere */
+a {
+  color: var(--text);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--accent);
+}
+
+/* If you have patient-name links, this guarantees no blue */
+a.patient-name,
+.patient-name a {
+  color: var(--text) !important;
+  font-weight: 800;
+}
+a.patient-name:hover,
+.patient-name a:hover {
+  color: var(--accent) !important;
+}
+
+/* ---------- Reusable UI classes (optional but helpful) ---------- */
+.cf-page {
+  background: var(--bg);
+  min-height: 100vh;
+  color: var(--text);
+}
+
+.cf-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  border-radius: 16px;
+}
+
+.cf-surface {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.cf-muted {
+  color: var(--muted);
+}
+
+/* Buttons */
+.cf-btn {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 800;
+}
+.cf-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Light mode: all primary buttons green.
+   Dark mode: still readable; keep green accent, no white backgrounds. */
+.cf-btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accentText);
+}
+.cf-btn-primary:hover {
+  background: var(--accent-2);
+  border-color: var(--accent-2);
+}
+
+/* Inputs */
+input, select, textarea {
+  background: var(--inputBg);
+  color: var(--inputText);
+  border: 1px solid var(--border);
+}
+input::placeholder, textarea::placeholder {
+  color: var(--placeholder);
+}

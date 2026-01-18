@@ -1,0 +1,122 @@
+/* src/pages/Login.css */
+
+/* Neutral, professional background (no strong colors) */
+.login-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  background: #f4f6f8;
+}
+
+/* Bigger but not too much */
+.login-card {
+  width: 560px;
+  max-width: calc(100vw - 40px);
+
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+
+  padding: 34px 34px 22px 34px;
+
+  /* clean shadow */
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.10);
+}
+
+.login-header {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 22px;
+}
+
+.login-logo {
+  height: 68px;
+  width: auto;
+  object-fit: contain;
+}
+
+.login-form {
+  display: grid;
+  gap: 16px;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.input {
+  width: 100%;
+  padding: 13px 14px;
+
+  border-radius: 12px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.input:focus {
+  border-color: #111827;
+  box-shadow: 0 0 0 4px rgba(17, 24, 39, 0.08);
+}
+
+.error {
+  border-radius: 12px;
+  padding: 12px 12px;
+
+  background: #fff5f5;
+  border: 1px solid #fecaca;
+
+  color: #991b1b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.btn {
+  margin-top: 4px;
+  width: 100%;
+
+  padding: 14px 16px;
+  border-radius: 12px;
+
+  border: 1px solid #111827;
+  background: #111827;
+  color: white;
+
+  font-size: 14px;
+  font-weight: 800;
+
+  cursor: pointer;
+  transition: transform 0.12s ease, opacity 0.12s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.footer {
+  margin-top: 18px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #6b7280;
+}

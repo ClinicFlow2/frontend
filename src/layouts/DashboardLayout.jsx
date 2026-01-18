@@ -1,113 +1,100 @@
 // src/layouts/DashboardLayout.jsx
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import ThemeToggle from "../components/ThemeToggle";
 import { logout } from "../api/auth";
 
-const linkStyle = ({ isActive }) => ({
-  display: "block",
-  padding: "10px 12px",
-  borderRadius: 10,
-  textDecoration: "none",
-  color: isActive ? "#111" : "#444",
-  background: isActive ? "#e9ecef" : "transparent",
-  fontWeight: isActive ? 700 : 500,
-});
+import logo from "../assets/logo.png";
 
-const disabledStyle = {
+const navItem = ({ isActive }) => ({
   display: "block",
   padding: "10px 12px",
-  borderRadius: 10,
+  borderRadius: 12,
   textDecoration: "none",
-  color: "#999",
-  background: "transparent",
-  fontWeight: 500,
-  cursor: "not-allowed",
-  userSelect: "none",
-};
+  color: "var(--sidebar-text)",
+  background: isActive ? "var(--sidebar-active)" : "transparent",
+  fontWeight: 800,
+});
 
 export default function DashboardLayout() {
   const navigate = useNavigate();
 
-  function comingSoon(message) {
-    alert(message);
+  function handleLogout() {
+    logout();
+    navigate("/login", { replace: true });
   }
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
+    <div style={{ display: "grid", gridTemplateColumns: "280px 1fr", minHeight: "100vh" }}>
       {/* Sidebar */}
       <aside
         style={{
-          width: 260,
+          background: "var(--sidebar-bg)",
+          color: "var(--sidebar-text)",
           padding: 16,
-          borderRight: "1px solid #eee",
-          background: "#fafafa",
+          borderRight: "1px solid rgba(255,255,255,0.08)",
         }}
       >
-        <h2 style={{ margin: "6px 0 14px" }}>ClinicFlow</h2>
-
-        <nav style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <NavLink to="/dashboard" style={linkStyle}>
-            Dashboard
-          </NavLink>
-
-          <NavLink to="/patients" style={linkStyle}>
-            Patients
-          </NavLink>
-
-          {/* ✅ Visits module is now available */}
-          <NavLink to="/visits" style={linkStyle}>
-            Visits
-          </NavLink>
-
-          {/* ✅ Prescriptions module is now available */}
-          <NavLink to="/prescriptions" style={linkStyle}>
-            Prescriptions
-          </NavLink>
-
-          {/* Coming soon */}
-          <span
-            style={disabledStyle}
-            title="Coming soon"
-            onClick={() =>
-              comingSoon(
-                "Appointments module is coming soon.\n\nFor now: open a patient, then use the patient workflow."
-              )
-            }
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                comingSoon(
-                  "Appointments module is coming soon.\n\nFor now: open a patient, then use the patient workflow."
-                );
-              }
-            }}
-          >
-            Appointments (soon)
-          </span>
-        </nav>
-
-        <div style={{ marginTop: 18 }}>
-          <button
-            onClick={() => {
-              logout();
-              navigate("/login");
-            }}
+        {/* Logo (ONLY the image) */}
+        <div style={{ padding: "6px 8px 14px" }}>
+          <img
+            src={logo}
+            alt="ClinicFlowHQ"
             style={{
               width: "100%",
-              padding: "10px 12px",
+              maxWidth: 210,
+              height: "auto",
+              display: "block",
               borderRadius: 10,
-              border: "1px solid #ddd",
-              background: "white",
-              cursor: "pointer",
             }}
-          >
-            Logout
-          </button>
+          />
         </div>
+
+        <nav style={{ display: "grid", gap: 8, marginTop: 6 }}>
+          <NavLink to="/dashboard" style={navItem}>
+            Dashboard
+          </NavLink>
+          <NavLink to="/patients" style={navItem}>
+            Patients
+          </NavLink>
+          <NavLink to="/visits" style={navItem}>
+            Visits
+          </NavLink>
+          <NavLink to="/prescriptions" style={navItem}>
+            Prescriptions
+          </NavLink>
+          <NavLink to="/appointments" style={navItem}>
+            Appointments
+          </NavLink>
+        </nav>
+
+        <div style={{ marginTop: 14 }}>
+          <ThemeToggle />
+        </div>
+
+        <div style={{ marginTop: 14, color: "var(--sidebar-muted)", fontSize: 12, lineHeight: 1.5 }}>
+          Tip: Use Prescriptions from a Visit to auto-link the Visit ID.
+        </div>
+
+        <button
+          onClick={handleLogout}
+          style={{
+            marginTop: 16,
+            width: "100%",
+            padding: "12px 14px",
+            borderRadius: 14,
+            border: "1px solid rgba(255,255,255,0.12)",
+            background: "transparent",
+            color: "var(--sidebar-text)",
+            cursor: "pointer",
+            fontWeight: 900,
+          }}
+        >
+          Logout
+        </button>
       </aside>
 
       {/* Main */}
-      <main style={{ flex: 1, padding: 20 }}>
+      <main className="cf-page">
         <Outlet />
       </main>
     </div>

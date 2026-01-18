@@ -1,9 +1,11 @@
 // src/pages/Patients.jsx
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { getPatients, createPatient } from "../api/patients";
 
 export default function Patients() {
+  const navigate = useNavigate();
+
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -85,14 +87,11 @@ export default function Patients() {
 
       alert("✅ Patient created!");
 
-      // Reload first page so user sees it immediately (ordering is last_name/first_name)
+      // Reload first page
       await loadPatients(1, query, pageSize);
     } catch (err) {
       console.log("CREATE PATIENT ERROR:", err?.response?.data || err);
-      alert(
-        "❌ Failed to create patient:\n" +
-          JSON.stringify(err?.response?.data || err, null, 2)
-      );
+      alert("❌ Failed to create patient:\n" + JSON.stringify(err?.response?.data || err, null, 2));
     }
   };
 
@@ -131,7 +130,7 @@ export default function Patients() {
     <div style={{ marginTop: 10 }}>
       <div style={{ display: "flex", alignItems: "baseline", gap: 12 }}>
         <h2 style={{ margin: 0 }}>Patients</h2>
-        <span style={{ color: "#666" }}>
+        <span style={{ color: "var(--muted, #666)" }}>
           Showing {startIndex}-{endIndex} of {count}
         </span>
       </div>
@@ -145,30 +144,15 @@ export default function Patients() {
           style={{
             width: "100%",
             padding: 10,
-            border: "1px solid #ddd",
-            borderRadius: 8,
+            border: "1px solid var(--border, #ddd)",
+            borderRadius: 10,
+            background: "var(--card, #fff)",
+            color: "var(--text, #111)",
           }}
         />
 
-        <div
-          style={{
-            display: "flex",
-            gap: 10,
-            marginTop: 10,
-            alignItems: "center",
-          }}
-        >
-          <button
-            onClick={() => loadPatients(1, query, pageSize)}
-            style={{
-              padding: "8px 10px",
-              borderRadius: 8,
-              border: "1px solid #ddd",
-              background: "white",
-              cursor: "pointer",
-              fontWeight: 600,
-            }}
-          >
+        <div style={{ display: "flex", gap: 10, marginTop: 10, alignItems: "center" }}>
+          <button onClick={() => loadPatients(1, query, pageSize)} style={btn()}>
             Search
           </button>
 
@@ -178,31 +162,24 @@ export default function Patients() {
                 setQuery("");
                 loadPatients(1, "", pageSize);
               }}
-              style={{
-                padding: "8px 10px",
-                borderRadius: 8,
-                border: "1px solid #ddd",
-                background: "white",
-                cursor: "pointer",
-              }}
+              style={btn()}
             >
               Clear
             </button>
           )}
 
-          <div
-            style={{
-              marginLeft: "auto",
-              display: "flex",
-              gap: 8,
-              alignItems: "center",
-            }}
-          >
-            <span style={{ color: "#666", fontSize: 13 }}>Per page</span>
+          <div style={{ marginLeft: "auto", display: "flex", gap: 8, alignItems: "center" }}>
+            <span style={{ color: "var(--muted, #666)", fontSize: 13 }}>Per page</span>
             <select
               value={pageSize}
               onChange={(e) => setPageSize(Number(e.target.value))}
-              style={{ padding: 8, borderRadius: 8, border: "1px solid #ddd" }}
+              style={{
+                padding: 10,
+                borderRadius: 10,
+                border: "1px solid var(--border, #ddd)",
+                background: "var(--card, #fff)",
+                color: "var(--text, #111)",
+              }}
             >
               <option value={5}>5</option>
               <option value={10}>10</option>
@@ -219,10 +196,10 @@ export default function Patients() {
         style={{
           marginBottom: 18,
           padding: 16,
-          border: "1px solid #e5e5e5",
-          borderRadius: 12,
-          maxWidth: 620,
-          background: "white",
+          border: "1px solid var(--border, #e5e5e5)",
+          borderRadius: 16,
+          maxWidth: 720,
+          background: "var(--card, #fff)",
         }}
       >
         <h3 style={{ marginTop: 0 }}>Add Patient</h3>
@@ -233,144 +210,64 @@ export default function Patients() {
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
             required
-            style={{ padding: 10, border: "1px solid #ddd", borderRadius: 8 }}
+            style={input}
           />
           <input
             placeholder="Last name"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
             required
-            style={{ padding: 10, border: "1px solid #ddd", borderRadius: 8 }}
+            style={input}
           />
         </div>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 10,
-            marginTop: 10,
-          }}
-        >
-          <select
-            value={sex}
-            onChange={(e) => setSex(e.target.value)}
-            required
-            style={{ padding: 10, border: "1px solid #ddd", borderRadius: 8 }}
-          >
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 10 }}>
+          <select value={sex} onChange={(e) => setSex(e.target.value)} required style={input}>
             <option value="M">Male</option>
             <option value="F">Female</option>
           </select>
 
-          <input
-            placeholder="Phone"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            style={{ padding: 10, border: "1px solid #ddd", borderRadius: 8 }}
-          />
+          <input placeholder="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} style={input} />
         </div>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 10,
-            marginTop: 10,
-          }}
-        >
-          <input
-            type="date"
-            value={dateOfBirth}
-            onChange={(e) => setDateOfBirth(e.target.value)}
-            required
-            style={{ padding: 10, border: "1px solid #ddd", borderRadius: 8 }}
-          />
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 10 }}>
+          <input type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} required style={input} />
 
-          <input
-            placeholder="Address"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            required
-            style={{ padding: 10, border: "1px solid #ddd", borderRadius: 8 }}
-          />
+          <input placeholder="Address" value={address} onChange={(e) => setAddress(e.target.value)} required style={input} />
         </div>
 
-        <button
-          type="submit"
-          style={{
-            marginTop: 12,
-            width: "100%",
-            padding: "12px 14px",
-            borderRadius: 10,
-            border: "1px solid #ddd",
-            background: "#f7f7f7",
-            cursor: "pointer",
-            fontWeight: 600,
-          }}
-        >
+        <button type="submit" style={{ ...btn(), width: "100%", marginTop: 12, fontWeight: 900 }}>
           Create Patient
         </button>
       </form>
 
       {/* Pagination controls */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          marginBottom: 12,
-        }}
-      >
-        <button
-          disabled={!hasPrev}
-          onClick={() => loadPatients(page - 1, query, pageSize)}
-          style={pagerBtn(!hasPrev)}
-        >
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+        <button disabled={!hasPrev} onClick={() => loadPatients(page - 1, query, pageSize)} style={pagerBtn(!hasPrev)}>
           ← Previous
         </button>
 
-        <div style={{ color: "#666", fontSize: 13 }}>
+        <div style={{ color: "var(--muted, #666)", fontSize: 13 }}>
           Page <b>{page}</b> of <b>{totalPages}</b>
         </div>
 
-        <button
-          disabled={!hasNext}
-          onClick={() => loadPatients(page + 1, query, pageSize)}
-          style={pagerBtn(!hasNext)}
-        >
+        <button disabled={!hasNext} onClick={() => loadPatients(page + 1, query, pageSize)} style={pagerBtn(!hasNext)}>
           Next →
         </button>
 
-        <button
-          onClick={() => loadPatients(page, query, pageSize)}
-          style={{
-            marginLeft: "auto",
-            padding: "10px 12px",
-            borderRadius: 10,
-            border: "1px solid #ddd",
-            background: "white",
-            cursor: "pointer",
-          }}
-        >
+        <button onClick={() => loadPatients(page, query, pageSize)} style={{ ...btn(), marginLeft: "auto" }}>
           Refresh
         </button>
       </div>
 
       {/* Table */}
       {filteredPatients.length === 0 ? (
-        <p style={{ color: "#666" }}>No patients found.</p>
+        <p style={{ color: "var(--muted, #666)" }}>No patients found.</p>
       ) : (
-        <div
-          style={{
-            overflowX: "auto",
-            border: "1px solid #e5e5e5",
-            borderRadius: 12,
-            background: "white",
-          }}
-        >
+        <div style={{ overflowX: "auto", border: "1px solid var(--border, #e5e5e5)", borderRadius: 16, background: "var(--card, #fff)" }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
-              <tr style={{ background: "#fafafa" }}>
+              <tr style={{ background: "var(--tableHead, rgba(255,255,255,0.04))" }}>
                 <th style={th}>Code</th>
                 <th style={th}>Name</th>
                 <th style={th}>Sex</th>
@@ -384,18 +281,12 @@ export default function Patients() {
             </thead>
             <tbody>
               {filteredPatients.map((p) => (
-                <tr key={p.id} style={{ borderTop: "1px solid #eee" }}>
+                <tr key={p.id} style={{ borderTop: "1px solid var(--border, #eee)" }}>
                   <td style={td}>{p.patient_code || "-"}</td>
 
                   <td style={td}>
-                    <Link
-                      to={`/patients/${p.id}`}
-                      style={{
-                        color: "#2a5bd7",
-                        textDecoration: "none",
-                        fontWeight: 600,
-                      }}
-                    >
+                    {/* IMPORTANT: route must exist in App.jsx: /patients/:id */}
+                    <Link to={`/patients/${p.id}`} style={nameLink}>
                       {p.first_name} {p.last_name}
                     </Link>
                   </td>
@@ -409,13 +300,22 @@ export default function Patients() {
 
                   <td style={td}>
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                      <Link to={`/patients/${p.id}`} style={actionLink}>
+                      {/* Button version (more reliable if CSS/Link styling breaks) */}
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/patients/${p.id}`)}
+                        style={actionBtn}
+                      >
                         View
-                      </Link>
+                      </button>
 
-                      <Link to={`/patients/${p.id}/visits`} style={actionLink}>
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/patients/${p.id}/visits`)}
+                        style={actionBtn}
+                      >
                         Visits
-                      </Link>
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -428,37 +328,66 @@ export default function Patients() {
   );
 }
 
+const input = {
+  padding: 10,
+  border: "1px solid var(--border, #ddd)",
+  borderRadius: 12,
+  background: "var(--card, #fff)",
+  color: "var(--text, #111)",
+};
+
 const th = {
   textAlign: "left",
   padding: "12px 12px",
   fontSize: 13,
-  color: "#444",
-  borderBottom: "1px solid #eee",
+  color: "var(--muted, #444)",
+  borderBottom: "1px solid var(--border, #eee)",
   whiteSpace: "nowrap",
 };
 
 const td = {
   padding: "12px 12px",
   verticalAlign: "top",
+  color: "var(--text, #111)",
 };
 
-const actionLink = {
-  display: "inline-block",
-  padding: "6px 10px",
-  borderRadius: 8,
-  border: "1px solid #ddd",
-  background: "white",
+const nameLink = {
+  color: "var(--link, #60a5fa)",
   textDecoration: "none",
-  color: "#111",
+  fontWeight: 800,
 };
+
+const actionBtn = {
+  padding: "8px 10px",
+  borderRadius: 12,
+  border: "1px solid var(--border, rgba(255,255,255,0.12))",
+  background: "var(--card, transparent)",
+  color: "var(--text, #111)",
+  cursor: "pointer",
+  fontWeight: 800,
+};
+
+function btn() {
+  return {
+    padding: "10px 12px",
+    borderRadius: 12,
+    border: "1px solid var(--border, rgba(255,255,255,0.12))",
+    background: "var(--card, #fff)",
+    color: "var(--text, #111)",
+    cursor: "pointer",
+    fontWeight: 800,
+  };
+}
 
 function pagerBtn(disabled) {
   return {
     padding: "10px 12px",
-    borderRadius: 10,
-    border: "1px solid #ddd",
-    background: disabled ? "#f2f2f2" : "white",
+    borderRadius: 12,
+    border: "1px solid var(--border, rgba(255,255,255,0.12))",
+    background: disabled ? "rgba(255,255,255,0.06)" : "var(--card, #fff)",
+    color: "var(--text, #111)",
     cursor: disabled ? "not-allowed" : "pointer",
     opacity: disabled ? 0.6 : 1,
+    fontWeight: 800,
   };
 }

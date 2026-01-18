@@ -30,7 +30,6 @@ export default function PatientVisits() {
     setLoading(true);
     try {
       const [p, v] = await Promise.all([getPatient(id), getVisits({ patientId: id })]);
-
       setPatient(p);
       setVisits(Array.isArray(v) ? v : []);
     } catch (err) {
@@ -55,9 +54,7 @@ export default function PatientVisits() {
       const payload = {
         patient: Number(id),
         visit_type: form.visit_type,
-
         ...(form.visit_date ? { visit_date: form.visit_date } : {}),
-
         chief_complaint: form.chief_complaint.trim(),
         history_of_present_illness: form.history_of_present_illness.trim(),
         physical_exam: form.physical_exam.trim(),
@@ -89,11 +86,11 @@ export default function PatientVisits() {
     }
   }
 
-  if (loading) return <p style={{ marginTop: 20 }}>Loading visits...</p>;
+  if (loading) return <p style={{ marginTop: 20, color: "var(--text)" }}>Loading visits...</p>;
   if (!patient) return null;
 
   return (
-    <div style={{ padding: 20 }}>
+    <div style={{ padding: 20, background: "var(--bg)", minHeight: "100vh", color: "var(--text)" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <button onClick={() => navigate(`/patients/${id}`)} style={btn}>
           ← Back
@@ -107,10 +104,10 @@ export default function PatientVisits() {
       </div>
 
       <div style={{ marginTop: 14 }}>
-        <h2 style={{ margin: 0 }}>
+        <h2 style={{ margin: 0, color: "var(--text)" }}>
           Visits — {patient.first_name} {patient.last_name}
         </h2>
-        <div style={{ color: "#666", marginTop: 6 }}>
+        <div style={{ color: "var(--muted)", marginTop: 6 }}>
           Patient code: <b>{patient.patient_code || "-"}</b>
         </div>
       </div>
@@ -121,13 +118,15 @@ export default function PatientVisits() {
         style={{
           marginTop: 16,
           padding: 16,
-          border: "1px solid #e5e5e5",
-          borderRadius: 12,
-          background: "white",
+          border: "1px solid var(--border)",
+          borderRadius: 16,
+          background: "var(--card)",
+          boxShadow: "var(--shadow)",
           maxWidth: 920,
+          color: "var(--text)",
         }}
       >
-        <h3 style={{ marginTop: 0 }}>New Visit</h3>
+        <h3 style={{ marginTop: 0, color: "var(--text)" }}>New Visit</h3>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
           <div>
@@ -168,9 +167,7 @@ export default function PatientVisits() {
             <label style={label}>History of present illness</label>
             <textarea
               value={form.history_of_present_illness}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, history_of_present_illness: e.target.value }))
-              }
+              onChange={(e) => setForm((f) => ({ ...f, history_of_present_illness: e.target.value }))}
               placeholder="Example: Fever for 2 days, cough, mild headache..."
               style={textarea}
               rows={5}
@@ -231,11 +228,12 @@ export default function PatientVisits() {
             marginTop: 12,
             width: "100%",
             padding: "12px 14px",
-            borderRadius: 10,
-            border: "1px solid #ddd",
-            background: "#f7f7f7",
+            borderRadius: 12,
+            border: "1px solid var(--accent)",
+            background: "var(--accent)",
+            color: "var(--accentText)",
             cursor: saving ? "not-allowed" : "pointer",
-            fontWeight: 700,
+            fontWeight: 900,
           }}
         >
           {saving ? "Saving..." : "Create visit"}
@@ -245,8 +243,8 @@ export default function PatientVisits() {
       {/* Visit history */}
       <div style={{ marginTop: 18 }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: 12 }}>
-          <h3 style={{ margin: 0 }}>Visit history</h3>
-          <span style={{ color: "#666" }}>{visits.length}</span>
+          <h3 style={{ margin: 0, color: "var(--text)" }}>Visit history</h3>
+          <span style={{ color: "var(--muted)" }}>{visits.length}</span>
 
           <button onClick={load} style={{ ...btn, marginLeft: "auto" }}>
             Refresh
@@ -254,10 +252,10 @@ export default function PatientVisits() {
         </div>
 
         {visits.length === 0 ? (
-          <p style={{ color: "#666", marginTop: 10 }}>No visits yet.</p>
+          <p style={{ color: "var(--muted)", marginTop: 10 }}>No visits yet.</p>
         ) : (
           <>
-            <div style={{ marginTop: 8, color: "#666", fontSize: 13 }}>
+            <div style={{ marginTop: 8, color: "var(--muted)", fontSize: 13 }}>
               Tip: click a row to open visit details + vitals.
             </div>
 
@@ -265,14 +263,15 @@ export default function PatientVisits() {
               style={{
                 marginTop: 10,
                 overflowX: "auto",
-                border: "1px solid #e5e5e5",
-                borderRadius: 12,
-                background: "white",
+                border: "1px solid var(--border)",
+                borderRadius: 16,
+                background: "var(--card)",
+                boxShadow: "var(--shadow)",
               }}
             >
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
-                  <tr style={{ background: "#fafafa" }}>
+                  <tr style={{ background: "var(--surface)" }}>
                     <th style={th}>Date</th>
                     <th style={th}>Type</th>
                     <th style={th}>Vitals (latest)</th>
@@ -284,7 +283,7 @@ export default function PatientVisits() {
                   {visits.map((v) => (
                     <tr
                       key={v.id}
-                      style={{ ...row, borderTop: "1px solid #eee" }}
+                      style={{ ...row, borderTop: "1px solid var(--border)" }}
                       title="Open visit"
                       onClick={() => navigate(`/patients/${id}/visits/${v.id}`)}
                     >
@@ -343,10 +342,7 @@ function formatVitalsSummary(vitalSigns) {
 
   const sys = latest.bp_systolic;
   const dia = latest.bp_diastolic;
-  if (
-    (sys !== null && sys !== undefined && sys !== "") ||
-    (dia !== null && dia !== undefined && dia !== "")
-  ) {
+  if ((sys !== null && sys !== undefined && sys !== "") || (dia !== null && dia !== undefined && dia !== "")) {
     parts.push(`BP ${sys || "?"}/${dia || "?"}`);
   }
 
@@ -354,11 +350,7 @@ function formatVitalsSummary(vitalSigns) {
     parts.push(`HR ${latest.heart_rate_bpm}`);
   }
 
-  if (
-    latest.oxygen_saturation_pct !== null &&
-    latest.oxygen_saturation_pct !== undefined &&
-    latest.oxygen_saturation_pct !== ""
-  ) {
+  if (latest.oxygen_saturation_pct !== null && latest.oxygen_saturation_pct !== undefined && latest.oxygen_saturation_pct !== "") {
     parts.push(`SpO₂ ${latest.oxygen_saturation_pct}%`);
   }
 
@@ -366,51 +358,60 @@ function formatVitalsSummary(vitalSigns) {
   return parts.join(" | ");
 }
 
-const row = {
-  cursor: "pointer",
-};
+const row = { cursor: "pointer" };
 
 const btn = {
-  padding: "8px 12px",
-  borderRadius: 10,
-  border: "1px solid #ddd",
-  background: "white",
+  padding: "10px 12px",
+  borderRadius: 12,
+  border: "1px solid var(--border)",
+  background: "var(--card)",
+  color: "var(--text)",
   cursor: "pointer",
+  fontWeight: 900,
 };
 
 const label = {
   display: "block",
   fontSize: 13,
-  color: "#444",
+  color: "var(--muted)",
   marginBottom: 6,
+  fontWeight: 900,
 };
 
 const input = {
   width: "100%",
-  padding: 10,
-  border: "1px solid #ddd",
-  borderRadius: 8,
+  padding: 11,
+  border: "1px solid var(--border)",
+  borderRadius: 12,
+  background: "var(--inputBg)",
+  color: "var(--inputText)",
+  outline: "none",
 };
 
 const textarea = {
   width: "100%",
-  padding: 10,
-  border: "1px solid #ddd",
-  borderRadius: 8,
+  padding: 11,
+  border: "1px solid var(--border)",
+  borderRadius: 12,
   resize: "vertical",
+  background: "var(--inputBg)",
+  color: "var(--inputText)",
+  outline: "none",
 };
 
 const th = {
   textAlign: "left",
   padding: "12px 12px",
   fontSize: 13,
-  color: "#444",
-  borderBottom: "1px solid #eee",
+  color: "var(--muted)",
+  borderBottom: "1px solid var(--border)",
   whiteSpace: "nowrap",
+  fontWeight: 950,
 };
 
 const td = {
   padding: "12px 12px",
   verticalAlign: "top",
   whiteSpace: "nowrap",
+  color: "var(--text)",
 };
