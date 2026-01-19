@@ -1,14 +1,86 @@
 // src/pages/PatientDetail.jsx
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { getPatient, updatePatient } from "../api/patients";
+import { api } from "../api/client";
+
+// Icons
+const Icons = {
+  ArrowLeft: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>
+    </svg>
+  ),
+  User: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+    </svg>
+  ),
+  Edit: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>
+    </svg>
+  ),
+  Calendar: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/>
+    </svg>
+  ),
+  Activity: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+    </svg>
+  ),
+  Phone: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+    </svg>
+  ),
+  MapPin: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
+    </svg>
+  ),
+  FileText: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/>
+    </svg>
+  ),
+};
+
+function calculateAge(dateOfBirth) {
+  if (!dateOfBirth) return null;
+  const today = new Date();
+  const birthDate = new Date(dateOfBirth);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+}
+
+function LoadingSkeleton() {
+  return (
+    <div className="cf-animate-in" style={{ padding: 24 }}>
+      <div className="cf-skeleton" style={{ height: 24, width: 100, borderRadius: 8, marginBottom: 24 }} />
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 24 }}>
+        <div className="cf-skeleton" style={{ height: 300, borderRadius: 16 }} />
+        <div className="cf-skeleton" style={{ height: 300, borderRadius: 16 }} />
+      </div>
+    </div>
+  );
+}
 
 export default function PatientDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [patient, setPatient] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [appointments, setAppointments] = useState([]);
 
   // edit state
   const [editing, setEditing] = useState(false);
@@ -27,8 +99,6 @@ export default function PatientDetail() {
     try {
       const data = await getPatient(id);
       setPatient(data);
-
-      // initialize edit form from server
       setForm({
         first_name: data.first_name || "",
         last_name: data.last_name || "",
@@ -37,9 +107,19 @@ export default function PatientDetail() {
         date_of_birth: data.date_of_birth || "",
         address: data.address || "",
       });
+
+      // Load upcoming appointments for this patient
+      try {
+        const apptRes = await api.get("/api/appointments/", {
+          params: { patient: id, upcoming: "true", page_size: 5 }
+        });
+        const apptData = apptRes.data;
+        setAppointments(Array.isArray(apptData) ? apptData : (apptData.results || []));
+      } catch {
+        setAppointments([]);
+      }
     } catch (err) {
       console.log("PATIENT DETAIL ERROR:", err?.response?.data || err);
-      alert("❌ Failed to load patient details.");
       navigate("/patients");
     } finally {
       setLoading(false);
@@ -68,237 +148,323 @@ export default function PatientDetail() {
       const updated = await updatePatient(id, payload);
       setPatient(updated);
       setEditing(false);
-      alert("✅ Patient updated!");
     } catch (err) {
       console.log("UPDATE PATIENT ERROR:", err?.response?.data || err);
-      alert(
-        "❌ Failed to update patient:\n" +
-          JSON.stringify(err?.response?.data || err, null, 2)
-      );
     } finally {
       setSaving(false);
     }
   }
 
-  if (loading) return <p style={{ marginTop: 20 }}>Loading patient...</p>;
+  if (loading) return <LoadingSkeleton />;
   if (!patient) return null;
 
-  return (
-    <div style={{ padding: 20 }}>
-      <button onClick={() => navigate("/patients")}>← Back</button>
+  const age = calculateAge(patient.date_of_birth);
 
-      <div
+  return (
+    <div className="cf-animate-in">
+      {/* Back button */}
+      <button
+        onClick={() => navigate("/patients")}
         style={{
-          display: "flex",
-          alignItems: "baseline",
-          gap: 12,
-          marginTop: 14,
+          display: "inline-flex", alignItems: "center", gap: 6,
+          padding: "8px 16px", borderRadius: 8, border: "1px solid var(--border)",
+          background: "var(--card)", color: "var(--text)", cursor: "pointer",
+          fontWeight: 500, fontSize: "0.875rem", marginBottom: 20,
         }}
       >
-        <h2 style={{ margin: 0 }}>
-          {patient.first_name} {patient.last_name}
-        </h2>
-        <span style={{ color: "#666" }}>{patient.patient_code || "-"}</span>
+        <Icons.ArrowLeft />
+        {t("common.back")}
+      </button>
 
-        <div style={{ marginLeft: "auto", display: "flex", gap: 10 }}>
-          <Link to={`/patients/${id}/visits`} style={linkBtn}>
-            Visits
-          </Link>
-
-          {!editing ? (
-            <button onClick={() => setEditing(true)} style={btn}>
-              Edit
-            </button>
-          ) : (
-            <>
-              <button
-                onClick={() => {
-                  // reset to server values
-                  setForm({
-                    first_name: patient.first_name || "",
-                    last_name: patient.last_name || "",
-                    sex: patient.sex || "M",
-                    phone: patient.phone || "",
-                    date_of_birth: patient.date_of_birth || "",
-                    address: patient.address || "",
-                  });
-                  setEditing(false);
-                }}
-                style={btn}
-                disabled={saving}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                style={{ ...btn, fontWeight: 700 }}
-                disabled={saving}
-              >
-                {saving ? "Saving..." : "Save"}
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* VIEW MODE */}
-      {!editing && (
-        <div style={{ marginTop: 12, lineHeight: 1.9 }}>
-          <div>
-            <b>Patient code:</b> {patient.patient_code || "-"}
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <div style={{
+            width: 64, height: 64, borderRadius: "50%",
+            background: patient.sex === "M" ? "rgba(59, 130, 246, 0.1)" : "rgba(236, 72, 153, 0.1)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            color: patient.sex === "M" ? "#3b82f6" : "#ec4899",
+          }}>
+            <Icons.User />
           </div>
           <div>
-            <b>Sex:</b> {patient.sex || "-"}
-          </div>
-          <div>
-            <b>Date of birth:</b> {patient.date_of_birth || "-"}
-          </div>
-          <div>
-            <b>Phone:</b> {patient.phone || "-"}
-          </div>
-          <div>
-            <b>Address:</b> {patient.address || "-"}
-          </div>
-
-          <div>
-            <b>Last visit:</b> {patient.last_visit_date || "-"}
-          </div>
-          <div>
-            <b>Next visit:</b> {patient.next_visit_date || "-"}
+            <h1 style={{ marginBottom: 4 }}>{patient.first_name} {patient.last_name}</h1>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, color: "var(--muted)", fontSize: "0.875rem" }}>
+              <span style={{
+                fontFamily: "monospace", background: "var(--surface)",
+                padding: "4px 8px", borderRadius: 4,
+              }}>
+                {patient.patient_code || "-"}
+              </span>
+              {age !== null && (
+                <span>{age} {t("patients.years")}</span>
+              )}
+              <span style={{
+                display: "inline-flex", alignItems: "center", padding: "4px 10px", borderRadius: 9999,
+                fontSize: "0.75rem", fontWeight: 600,
+                background: patient.sex === "M" ? "rgba(59, 130, 246, 0.1)" : "rgba(236, 72, 153, 0.1)",
+                color: patient.sex === "M" ? "#3b82f6" : "#ec4899",
+              }}>
+                {patient.sex === "M" ? t("patients.male") : t("patients.female")}
+              </span>
+            </div>
           </div>
         </div>
-      )}
 
-      {/* EDIT MODE */}
-      {editing && (
-        <form
-          onSubmit={handleSave}
+        <button
+          onClick={() => setEditing(!editing)}
           style={{
-            marginTop: 14,
-            padding: 16,
-            border: "1px solid #e5e5e5",
-            borderRadius: 12,
-            background: "white",
-            maxWidth: 640,
+            display: "flex", alignItems: "center", gap: 8, padding: "10px 20px",
+            borderRadius: 8, border: "none", background: "var(--accent)", color: "white",
+            cursor: "pointer", fontWeight: 600, fontSize: "0.875rem",
           }}
         >
-          <h3 style={{ marginTop: 0 }}>Edit Patient</h3>
+          <Icons.Edit />
+          {t("patients.editPatient")}
+        </button>
+      </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            <input
-              value={form.first_name}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, first_name: e.target.value }))
-              }
-              placeholder="First name"
-              required
-              style={input}
-            />
-            <input
-              value={form.last_name}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, last_name: e.target.value }))
-              }
-              placeholder="Last name"
-              required
-              style={input}
-            />
+      {/* Edit Form (modal-style) */}
+      {editing && (
+        <form onSubmit={handleSave} style={{
+          marginBottom: 24, padding: 24, border: "1px solid var(--border)",
+          borderRadius: 16, background: "var(--card)", boxShadow: "var(--shadow)",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+            <h3 style={{ margin: 0 }}>{t("patients.editPatient")}</h3>
+            <button type="button" onClick={() => {
+              setForm({
+                first_name: patient.first_name || "",
+                last_name: patient.last_name || "",
+                sex: patient.sex || "M",
+                phone: patient.phone || "",
+                date_of_birth: patient.date_of_birth || "",
+                address: patient.address || "",
+              });
+              setEditing(false);
+            }} style={{
+              background: "none", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: "1.25rem", lineHeight: 1,
+            }}>×</button>
           </div>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 10,
-              marginTop: 10,
-            }}
-          >
-            <select
-              value={form.sex}
-              onChange={(e) => setForm((f) => ({ ...f, sex: e.target.value }))}
-              style={input}
-              required
-            >
-              <option value="M">Male</option>
-              <option value="F">Female</option>
-            </select>
-
-            <input
-              value={form.phone}
-              onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-              placeholder="Phone"
-              style={input}
-            />
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>
+            <div>
+              <label style={labelStyle}>{t("patients.firstName")} *</label>
+              <input
+                value={form.first_name}
+                onChange={(e) => setForm((f) => ({ ...f, first_name: e.target.value }))}
+                required
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>{t("patients.lastName")} *</label>
+              <input
+                value={form.last_name}
+                onChange={(e) => setForm((f) => ({ ...f, last_name: e.target.value }))}
+                required
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>{t("patients.sex")} *</label>
+              <select
+                value={form.sex}
+                onChange={(e) => setForm((f) => ({ ...f, sex: e.target.value }))}
+                required
+              >
+                <option value="M">{t("patients.male")}</option>
+                <option value="F">{t("patients.female")}</option>
+              </select>
+            </div>
+            <div>
+              <label style={labelStyle}>{t("patients.dateOfBirth")} *</label>
+              <input
+                type="date"
+                value={form.date_of_birth}
+                onChange={(e) => setForm((f) => ({ ...f, date_of_birth: e.target.value }))}
+                required
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>{t("patients.phone")}</label>
+              <input
+                value={form.phone}
+                onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>{t("patients.address")} *</label>
+              <input
+                value={form.address}
+                onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
+                required
+              />
+            </div>
           </div>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 10,
-              marginTop: 10,
-            }}
-          >
-            <input
-              type="date"
-              value={form.date_of_birth}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, date_of_birth: e.target.value }))
-              }
-              required
-              style={input}
-            />
-
-            <input
-              value={form.address}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, address: e.target.value }))
-              }
-              placeholder="Address"
-              required
-              style={input}
-            />
+          <div style={{ display: "flex", gap: 12, marginTop: 20 }}>
+            <button type="submit" disabled={saving} style={{
+              padding: "10px 24px", borderRadius: 8, border: "none", background: "var(--accent)",
+              color: "white", cursor: saving ? "not-allowed" : "pointer", fontWeight: 600,
+              fontSize: "0.875rem", opacity: saving ? 0.7 : 1,
+            }}>
+              {saving ? t("common.saving") : t("common.save")}
+            </button>
+            <button type="button" onClick={() => {
+              setForm({
+                first_name: patient.first_name || "",
+                last_name: patient.last_name || "",
+                sex: patient.sex || "M",
+                phone: patient.phone || "",
+                date_of_birth: patient.date_of_birth || "",
+                address: patient.address || "",
+              });
+              setEditing(false);
+            }} style={{
+              padding: "10px 24px", borderRadius: 8, border: "1px solid var(--border)",
+              background: "var(--card)", color: "var(--text)", cursor: "pointer", fontWeight: 500, fontSize: "0.875rem",
+            }}>
+              {t("common.cancel")}
+            </button>
           </div>
-
-          <button
-            type="submit"
-            disabled={saving}
-            style={{
-              marginTop: 12,
-              width: "100%",
-              padding: "12px 14px",
-              borderRadius: 10,
-              border: "1px solid #ddd",
-              background: "#f7f7f7",
-              cursor: saving ? "not-allowed" : "pointer",
-              fontWeight: 700,
-            }}
-          >
-            {saving ? "Saving..." : "Save changes"}
-          </button>
         </form>
       )}
+
+      {/* Main content grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 24 }}>
+        {/* Left column - Patient info cards */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          {/* Personal Information */}
+          <div style={cardStyle}>
+            <h3 style={cardHeaderStyle}>{t("patients.personalInformation")}</h3>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <InfoRow label={t("patients.patientCode")} value={patient.patient_code || "-"} mono />
+              <InfoRow label={t("patients.dateOfBirth")} value={patient.date_of_birth || "-"} />
+              <InfoRow label={t("patients.age")} value={age !== null ? `${age} ${t("patients.years")}` : "-"} />
+              <InfoRow label={t("patients.sex")} value={patient.sex === "M" ? t("patients.male") : t("patients.female")} />
+            </div>
+          </div>
+
+          {/* Contact Information */}
+          <div style={cardStyle}>
+            <h3 style={cardHeaderStyle}>{t("patients.contactInformation")}</h3>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <Icons.Phone />
+                <span>{patient.phone || "-"}</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                <Icons.MapPin />
+                <span>{patient.address || "-"}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Visit Info */}
+          <div style={cardStyle}>
+            <h3 style={cardHeaderStyle}>{t("patients.medicalInfo")}</h3>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <InfoRow label={t("patients.lastVisit")} value={patient.last_visit_date || "-"} />
+              <InfoRow label={t("patients.nextVisit")} value={patient.next_visit_date || "-"} />
+            </div>
+          </div>
+        </div>
+
+        {/* Right column - Quick actions and activity */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          {/* Quick Actions */}
+          <div style={cardStyle}>
+            <h3 style={cardHeaderStyle}>{t("patients.quickActions")}</h3>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12 }}>
+              <Link to={`/patients/${id}/visits`} style={actionCardStyle}>
+                <Icons.Activity />
+                <span>{t("patients.viewVisits")}</span>
+              </Link>
+              <Link to={`/appointments`} style={actionCardStyle}>
+                <Icons.Calendar />
+                <span>{t("patients.newAppointment")}</span>
+              </Link>
+              <Link to={`/prescriptions`} style={actionCardStyle}>
+                <Icons.FileText />
+                <span>{t("patients.createPrescription")}</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Upcoming Appointments */}
+          <div style={cardStyle}>
+            <h3 style={cardHeaderStyle}>{t("patients.upcomingAppointments")}</h3>
+            {appointments.length === 0 ? (
+              <p style={{ color: "var(--muted)", fontSize: "0.875rem", margin: 0 }}>
+                {t("patients.noUpcomingAppointments")}
+              </p>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {appointments.map((appt) => (
+                  <div key={appt.id} style={{
+                    padding: 12, borderRadius: 8, background: "var(--surface)",
+                    display: "flex", justifyContent: "space-between", alignItems: "center",
+                  }}>
+                    <div>
+                      <div style={{ fontWeight: 500 }}>
+                        {appt.scheduled_at ? new Date(appt.scheduled_at).toLocaleDateString() : "-"}
+                      </div>
+                      <div style={{ fontSize: "0.8125rem", color: "var(--muted)" }}>
+                        {appt.scheduled_at ? new Date(appt.scheduled_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ""}
+                        {appt.reason && ` - ${appt.reason}`}
+                      </div>
+                    </div>
+                    <span style={{
+                      display: "inline-flex", alignItems: "center", padding: "4px 10px", borderRadius: 9999,
+                      fontSize: "0.75rem", fontWeight: 600,
+                      background: appt.status === "CONFIRMED" ? "rgba(34, 197, 94, 0.1)" : "rgba(59, 130, 246, 0.1)",
+                      color: appt.status === "CONFIRMED" ? "#22c55e" : "#3b82f6",
+                    }}>
+                      {appt.status === "CONFIRMED" ? t("appointments.confirmed") : t("appointments.scheduled")}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
 
-const btn = {
-  padding: "8px 12px",
-  borderRadius: 10,
-  border: "1px solid #ddd",
-  background: "white",
-  cursor: "pointer",
+function InfoRow({ label, value, mono }) {
+  return (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <span style={{ color: "var(--muted)", fontSize: "0.875rem" }}>{label}</span>
+      <span style={{
+        fontWeight: 500,
+        fontFamily: mono ? "monospace" : "inherit",
+        background: mono ? "var(--surface)" : "transparent",
+        padding: mono ? "4px 8px" : 0,
+        borderRadius: mono ? 4 : 0,
+      }}>
+        {value}
+      </span>
+    </div>
+  );
+}
+
+const labelStyle = {
+  display: "block", marginBottom: 6, fontSize: "0.875rem", fontWeight: 500, color: "var(--text)",
 };
 
-const linkBtn = {
-  ...btn,
-  textDecoration: "none",
-  color: "#111",
-  display: "inline-block",
+const cardStyle = {
+  padding: 20, borderRadius: 16, border: "1px solid var(--border)",
+  background: "var(--card)",
 };
 
-const input = {
-  padding: 10,
-  border: "1px solid #ddd",
-  borderRadius: 8,
+const cardHeaderStyle = {
+  margin: "0 0 16px 0", fontSize: "1rem", fontWeight: 600,
+};
+
+const actionCardStyle = {
+  display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+  gap: 8, padding: 16, borderRadius: 12, background: "var(--surface)",
+  textDecoration: "none", color: "var(--text)", fontWeight: 500, fontSize: "0.8125rem",
+  textAlign: "center", transition: "all 150ms ease",
 };
