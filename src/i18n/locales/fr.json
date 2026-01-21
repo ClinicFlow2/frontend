@@ -375,6 +375,16 @@
     "currentPassword": "Mot de passe actuel",
     "newPassword": "Nouveau mot de passe",
     "confirmPassword": "Confirmer le nouveau mot de passe",
+    "passwordRequirements": "Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.",
+    "passwordErrors": {
+      "minLength": "Le mot de passe doit contenir au moins 8 caractères.",
+      "uppercase": "Le mot de passe doit contenir au moins une lettre majuscule.",
+      "lowercase": "Le mot de passe doit contenir au moins une lettre minuscule.",
+      "digit": "Le mot de passe doit contenir au moins un chiffre.",
+      "special": "Le mot de passe doit contenir au moins un caractère spécial.",
+      "mismatch": "Les nouveaux mots de passe ne correspondent pas.",
+      "incorrect": "Le mot de passe actuel est incorrect."
+    },
     "loadError": "Échec du chargement du profil. Veuillez réessayer.",
     "updateSuccess": "Profil mis à jour avec succès.",
     "updateError": "Échec de la mise à jour du profil. Veuillez réessayer.",
@@ -384,6 +394,45 @@
       "admin": "Administrateur",
       "doctor": "Médecin",
       "nurse": "Infirmier(ère)"
+    }
+  },
+  "availability": {
+    "title": "Mes disponibilités",
+    "description": "Définissez votre disponibilité pour chaque jour. Cliquez sur un jour pour modifier votre statut.",
+    "setFor": "Définir la disponibilité pour",
+    "loadError": "Échec du chargement des disponibilités.",
+    "updateSuccess": "Disponibilité mise à jour.",
+    "updateError": "Échec de la mise à jour de la disponibilité.",
+    "months": {
+      "january": "Janvier",
+      "february": "Février",
+      "march": "Mars",
+      "april": "Avril",
+      "may": "Mai",
+      "june": "Juin",
+      "july": "Juillet",
+      "august": "Août",
+      "september": "Septembre",
+      "october": "Octobre",
+      "november": "Novembre",
+      "december": "Décembre"
+    },
+    "days": {
+      "sun": "Dim",
+      "mon": "Lun",
+      "tue": "Mar",
+      "wed": "Mer",
+      "thu": "Jeu",
+      "fri": "Ven",
+      "sat": "Sam"
+    },
+    "slots": {
+      "fullDay": "Journée complète",
+      "morning": "Matin",
+      "afternoon": "Après-midi",
+      "evening": "Soir",
+      "unavailable": "Indisponible",
+      "clear": "Effacer"
     }
   }
 }

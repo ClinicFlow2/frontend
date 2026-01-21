@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { getProfile, updateProfile, changePassword } from "../api/profile";
+import { api } from "../api/client";
 
 // Role badge colors
 const roleColors = {
@@ -52,6 +53,16 @@ const Icons = {
       <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
     </svg>
   ),
+  Eye: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>
+    </svg>
+  ),
+  EyeOff: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/>
+    </svg>
+  ),
   Edit: () => (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>
@@ -86,6 +97,13 @@ export default function Profile() {
     current_password: "",
     new_password: "",
     confirm_password: "",
+  });
+
+  // Password visibility state
+  const [showPasswords, setShowPasswords] = useState({
+    current: false,
+    new: false,
+    confirm: false,
   });
 
   async function loadProfile() {
@@ -136,6 +154,36 @@ export default function Profile() {
     }
   }
 
+  // Translate password error messages from backend
+  function translatePasswordError(errorMsg) {
+    if (!errorMsg) return t("profile.passwordError");
+
+    // Map backend error messages to translation keys
+    if (errorMsg.includes("at least 8 characters")) {
+      return t("profile.passwordErrors.minLength");
+    }
+    if (errorMsg.includes("uppercase")) {
+      return t("profile.passwordErrors.uppercase");
+    }
+    if (errorMsg.includes("lowercase")) {
+      return t("profile.passwordErrors.lowercase");
+    }
+    if (errorMsg.includes("digit")) {
+      return t("profile.passwordErrors.digit");
+    }
+    if (errorMsg.includes("special character")) {
+      return t("profile.passwordErrors.special");
+    }
+    if (errorMsg.includes("do not match")) {
+      return t("profile.passwordErrors.mismatch");
+    }
+    if (errorMsg.includes("incorrect")) {
+      return t("profile.passwordErrors.incorrect");
+    }
+
+    return errorMsg;
+  }
+
   async function handleChangePassword(e) {
     e.preventDefault();
     setSaving(true);
@@ -146,16 +194,32 @@ export default function Profile() {
       await changePassword(passwordData);
       setShowPasswordForm(false);
       setPasswordData({ current_password: "", new_password: "", confirm_password: "" });
+      setShowPasswords({ current: false, new: false, confirm: false });
       setSuccess(t("profile.passwordSuccess"));
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
       console.error("Failed to change password:", err);
-      const errorMsg = err?.response?.data?.current_password?.[0] ||
-        err?.response?.data?.confirm_password?.[0] ||
-        err?.response?.data?.new_password?.[0] ||
-        err?.response?.data?.detail ||
-        t("profile.passwordError");
-      setError(errorMsg);
+
+      // Collect all error messages
+      const errors = [];
+      const data = err?.response?.data;
+
+      if (data?.current_password) {
+        errors.push(...data.current_password.map(translatePasswordError));
+      }
+      if (data?.new_password) {
+        // new_password can be an array of errors
+        const pwErrors = Array.isArray(data.new_password) ? data.new_password : [data.new_password];
+        errors.push(...pwErrors.map(translatePasswordError));
+      }
+      if (data?.confirm_password) {
+        errors.push(...data.confirm_password.map(translatePasswordError));
+      }
+      if (data?.detail) {
+        errors.push(translatePasswordError(data.detail));
+      }
+
+      setError(errors.length > 0 ? errors.join(" ") : t("profile.passwordError"));
     } finally {
       setSaving(false);
     }
@@ -488,34 +552,100 @@ export default function Profile() {
             <div style={{ display: "grid", gap: 16, maxWidth: 400 }}>
               <div>
                 <label style={labelStyle}>{t("profile.currentPassword")}</label>
-                <input
-                  type="password"
-                  value={passwordData.current_password}
-                  onChange={(e) => setPasswordData({ ...passwordData, current_password: e.target.value })}
-                  style={inputStyle}
-                  required
-                />
+                <div style={{ position: "relative" }}>
+                  <input
+                    type={showPasswords.current ? "text" : "password"}
+                    value={passwordData.current_password}
+                    onChange={(e) => setPasswordData({ ...passwordData, current_password: e.target.value })}
+                    style={{ ...inputStyle, paddingRight: 40 }}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswords({ ...showPasswords, current: !showPasswords.current })}
+                    style={{
+                      position: "absolute",
+                      right: 8,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      padding: 4,
+                      color: "var(--muted)",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
+                    {showPasswords.current ? <Icons.EyeOff /> : <Icons.Eye />}
+                  </button>
+                </div>
               </div>
               <div>
                 <label style={labelStyle}>{t("profile.newPassword")}</label>
-                <input
-                  type="password"
-                  value={passwordData.new_password}
-                  onChange={(e) => setPasswordData({ ...passwordData, new_password: e.target.value })}
-                  style={inputStyle}
-                  required
-                  minLength={8}
-                />
+                <div style={{ position: "relative" }}>
+                  <input
+                    type={showPasswords.new ? "text" : "password"}
+                    value={passwordData.new_password}
+                    onChange={(e) => setPasswordData({ ...passwordData, new_password: e.target.value })}
+                    style={{ ...inputStyle, paddingRight: 40 }}
+                    required
+                    minLength={8}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswords({ ...showPasswords, new: !showPasswords.new })}
+                    style={{
+                      position: "absolute",
+                      right: 8,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      padding: 4,
+                      color: "var(--muted)",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
+                    {showPasswords.new ? <Icons.EyeOff /> : <Icons.Eye />}
+                  </button>
+                </div>
+                <p style={{ margin: "6px 0 0", fontSize: "0.75rem", color: "var(--muted)" }}>
+                  {t("profile.passwordRequirements")}
+                </p>
               </div>
               <div>
                 <label style={labelStyle}>{t("profile.confirmPassword")}</label>
-                <input
-                  type="password"
-                  value={passwordData.confirm_password}
-                  onChange={(e) => setPasswordData({ ...passwordData, confirm_password: e.target.value })}
-                  style={inputStyle}
-                  required
-                />
+                <div style={{ position: "relative" }}>
+                  <input
+                    type={showPasswords.confirm ? "text" : "password"}
+                    value={passwordData.confirm_password}
+                    onChange={(e) => setPasswordData({ ...passwordData, confirm_password: e.target.value })}
+                    style={{ ...inputStyle, paddingRight: 40 }}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswords({ ...showPasswords, confirm: !showPasswords.confirm })}
+                    style={{
+                      position: "absolute",
+                      right: 8,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      padding: 4,
+                      color: "var(--muted)",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
+                    {showPasswords.confirm ? <Icons.EyeOff /> : <Icons.Eye />}
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -542,6 +672,7 @@ export default function Profile() {
                 onClick={() => {
                   setShowPasswordForm(false);
                   setPasswordData({ current_password: "", new_password: "", confirm_password: "" });
+                  setShowPasswords({ current: false, new: false, confirm: false });
                   setError("");
                 }}
                 style={{
@@ -584,6 +715,30 @@ export default function Profile() {
           </button>
         )}
       </div>
+
+      {/* Availability Calendar - Only for doctors and admins */}
+      {(role === "doctor" || role === "admin") && (
+        <div style={{
+          background: "var(--card)",
+          border: "1px solid var(--border)",
+          borderRadius: 16,
+          padding: 24,
+          marginTop: 24,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+            <div style={{ color: "var(--accent)" }}>
+              <Icons.Calendar />
+            </div>
+            <h3 style={{ margin: 0, color: "var(--text)", fontSize: "1.125rem" }}>
+              {t("availability.title")}
+            </h3>
+          </div>
+          <p style={{ margin: "0 0 20px", color: "var(--muted)", fontSize: "0.875rem" }}>
+            {t("availability.description")}
+          </p>
+          <AvailabilityCalendar t={t} />
+        </div>
+      )}
     </div>
   );
 }
@@ -628,3 +783,317 @@ const inputStyle = {
   transition: "border-color 150ms ease",
   boxSizing: "border-box",
 };
+
+// Slot options for availability
+const SLOT_OPTIONS = [
+  { value: "full_day", label: "Full Day", color: "#22c55e" },
+  { value: "morning", label: "Morning (8-12)", color: "#3b82f6" },
+  { value: "afternoon", label: "Afternoon (12-17)", color: "#f59e0b" },
+  { value: "evening", label: "Evening (17-21)", color: "#8b5cf6" },
+  { value: "unavailable", label: "Unavailable", color: "#ef4444" },
+];
+
+function AvailabilityCalendar({ t }) {
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [availabilities, setAvailabilities] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedSlot, setSelectedSlot] = useState("full_day");
+
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+
+  const monthNames = [
+    t("availability.months.january"), t("availability.months.february"),
+    t("availability.months.march"), t("availability.months.april"),
+    t("availability.months.may"), t("availability.months.june"),
+    t("availability.months.july"), t("availability.months.august"),
+    t("availability.months.september"), t("availability.months.october"),
+    t("availability.months.november"), t("availability.months.december"),
+  ];
+
+  const dayNames = [
+    t("availability.days.sun"), t("availability.days.mon"),
+    t("availability.days.tue"), t("availability.days.wed"),
+    t("availability.days.thu"), t("availability.days.fri"),
+    t("availability.days.sat"),
+  ];
+
+  async function loadAvailabilities() {
+    setLoading(true);
+    try {
+      const res = await api.get("/api/accounts/availability/", {
+        params: { year, month: month + 1 }
+      });
+      const map = {};
+      (res.data || []).forEach((a) => {
+        map[a.date] = a;
+      });
+      setAvailabilities(map);
+    } catch (err) {
+      console.error("Failed to load availabilities:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadAvailabilities();
+  }, [year, month]);
+
+  async function handleSetAvailability(date, slot) {
+    setSaving(true);
+    try {
+      await api.post("/api/accounts/availability/", { date, slot });
+      await loadAvailabilities();
+      setSelectedDate(null);
+    } catch (err) {
+      console.error("Failed to set availability:", err);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDeleteAvailability(date) {
+    setSaving(true);
+    try {
+      await api.delete(`/api/accounts/availability/?date=${date}`);
+      await loadAvailabilities();
+      setSelectedDate(null);
+    } catch (err) {
+      console.error("Failed to delete availability:", err);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function getDaysInMonth(y, m) {
+    return new Date(y, m + 1, 0).getDate();
+  }
+
+  function getFirstDayOfMonth(y, m) {
+    return new Date(y, m, 1).getDay();
+  }
+
+  function prevMonth() {
+    setCurrentDate(new Date(year, month - 1, 1));
+  }
+
+  function nextMonth() {
+    setCurrentDate(new Date(year, month + 1, 1));
+  }
+
+  const daysInMonth = getDaysInMonth(year, month);
+  const firstDay = getFirstDayOfMonth(year, month);
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+
+  const days = [];
+  for (let i = 0; i < firstDay; i++) {
+    days.push(null);
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    days.push(d);
+  }
+
+  function getDateStr(day) {
+    return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  }
+
+  function getSlotColor(slot) {
+    const opt = SLOT_OPTIONS.find((o) => o.value === slot);
+    return opt ? opt.color : "#6b7280";
+  }
+
+  function getSlotLabel(slot) {
+    switch (slot) {
+      case "full_day": return t("availability.slots.fullDay");
+      case "morning": return t("availability.slots.morning");
+      case "afternoon": return t("availability.slots.afternoon");
+      case "evening": return t("availability.slots.evening");
+      case "unavailable": return t("availability.slots.unavailable");
+      default: return slot;
+    }
+  }
+
+  return (
+    <div>
+      {/* Calendar Header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+        <button
+          onClick={prevMonth}
+          style={{
+            padding: "8px 12px", borderRadius: 8, border: "1px solid var(--border)",
+            background: "var(--card)", cursor: "pointer", color: "var(--text)",
+          }}
+        >
+          ←
+        </button>
+        <h4 style={{ margin: 0, color: "var(--text)" }}>
+          {monthNames[month]} {year}
+        </h4>
+        <button
+          onClick={nextMonth}
+          style={{
+            padding: "8px 12px", borderRadius: 8, border: "1px solid var(--border)",
+            background: "var(--card)", cursor: "pointer", color: "var(--text)",
+          }}
+        >
+          →
+        </button>
+      </div>
+
+      {/* Legend */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: 16, fontSize: "0.75rem" }}>
+        {SLOT_OPTIONS.map((opt) => (
+          <div key={opt.value} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <div style={{ width: 12, height: 12, borderRadius: 3, background: opt.color }} />
+            <span style={{ color: "var(--muted)" }}>{getSlotLabel(opt.value)}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Day Headers */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4, marginBottom: 4 }}>
+        {dayNames.map((day) => (
+          <div key={day} style={{
+            textAlign: "center", padding: 8, fontSize: "0.75rem",
+            fontWeight: 600, color: "var(--muted)", textTransform: "uppercase",
+          }}>
+            {day}
+          </div>
+        ))}
+      </div>
+
+      {/* Calendar Grid */}
+      {loading ? (
+        <div style={{ textAlign: "center", padding: 40, color: "var(--muted)" }}>
+          {t("common.loading")}...
+        </div>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
+          {days.map((day, idx) => {
+            if (day === null) {
+              return <div key={`empty-${idx}`} />;
+            }
+
+            const dateStr = getDateStr(day);
+            const avail = availabilities[dateStr];
+            const isToday = dateStr === todayStr;
+            const isPast = new Date(dateStr) < new Date(todayStr);
+            const isSelected = selectedDate === dateStr;
+
+            return (
+              <div
+                key={dateStr}
+                onClick={() => !isPast && setSelectedDate(isSelected ? null : dateStr)}
+                style={{
+                  position: "relative",
+                  aspectRatio: "1",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: 8,
+                  border: isSelected ? "2px solid var(--accent)" : isToday ? "2px solid var(--accent)" : "1px solid var(--border)",
+                  background: avail ? getSlotColor(avail.slot) + "20" : "var(--surface)",
+                  cursor: isPast ? "default" : "pointer",
+                  opacity: isPast ? 0.5 : 1,
+                  transition: "all 150ms ease",
+                }}
+              >
+                <span style={{
+                  fontWeight: isToday ? 700 : 500,
+                  color: isToday ? "var(--accent)" : "var(--text)",
+                  fontSize: "0.875rem",
+                }}>
+                  {day}
+                </span>
+                {avail && (
+                  <div style={{
+                    position: "absolute",
+                    bottom: 4,
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    background: getSlotColor(avail.slot),
+                  }} />
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Selected Date Actions */}
+      {selectedDate && (
+        <div style={{
+          marginTop: 16, padding: 16, borderRadius: 12,
+          background: "var(--surface)", border: "1px solid var(--border)",
+        }}>
+          <h5 style={{ margin: "0 0 12px", color: "var(--text)" }}>
+            {t("availability.setFor")} {selectedDate}
+          </h5>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+            {SLOT_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setSelectedSlot(opt.value)}
+                style={{
+                  padding: "8px 12px", borderRadius: 8,
+                  border: selectedSlot === opt.value ? `2px solid ${opt.color}` : "1px solid var(--border)",
+                  background: selectedSlot === opt.value ? opt.color + "20" : "var(--card)",
+                  color: selectedSlot === opt.value ? opt.color : "var(--text)",
+                  cursor: "pointer", fontWeight: 500, fontSize: "0.8125rem",
+                }}
+              >
+                {getSlotLabel(opt.value)}
+              </button>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              onClick={() => handleSetAvailability(selectedDate, selectedSlot)}
+              disabled={saving}
+              style={{
+                padding: "10px 20px", borderRadius: 8, border: "none",
+                background: "var(--accent)", color: "white",
+                cursor: saving ? "not-allowed" : "pointer",
+                fontWeight: 600, fontSize: "0.875rem", opacity: saving ? 0.7 : 1,
+              }}
+            >
+              {saving ? t("common.saving") : t("common.save")}
+            </button>
+            {availabilities[selectedDate] && (
+              <button
+                onClick={() => handleDeleteAvailability(selectedDate)}
+                disabled={saving}
+                style={{
+                  padding: "10px 20px", borderRadius: 8,
+                  border: "1px solid rgba(239, 68, 68, 0.3)",
+                  background: "var(--card)", color: "#ef4444",
+                  cursor: saving ? "not-allowed" : "pointer",
+                  fontWeight: 500, fontSize: "0.875rem",
+                }}
+              >
+                {t("common.clear")}
+              </button>
+            )}
+            <button
+              onClick={() => setSelectedDate(null)}
+              style={{
+                padding: "10px 20px", borderRadius: 8,
+                border: "1px solid var(--border)",
+                background: "var(--card)", color: "var(--text)",
+                cursor: "pointer", fontWeight: 500, fontSize: "0.875rem",
+              }}
+            >
+              {t("common.cancel")}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

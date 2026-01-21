@@ -375,6 +375,16 @@
     "currentPassword": "Current Password",
     "newPassword": "New Password",
     "confirmPassword": "Confirm New Password",
+    "passwordRequirements": "Password must contain at least 8 characters, one uppercase, one lowercase, one number, and one special character.",
+    "passwordErrors": {
+      "minLength": "Password must be at least 8 characters long.",
+      "uppercase": "Password must contain at least one uppercase letter.",
+      "lowercase": "Password must contain at least one lowercase letter.",
+      "digit": "Password must contain at least one digit.",
+      "special": "Password must contain at least one special character.",
+      "mismatch": "New passwords do not match.",
+      "incorrect": "Current password is incorrect."
+    },
     "loadError": "Failed to load profile. Please try again.",
     "updateSuccess": "Profile updated successfully.",
     "updateError": "Failed to update profile. Please try again.",
@@ -384,6 +394,45 @@
       "admin": "Administrator",
       "doctor": "Doctor",
       "nurse": "Nurse"
+    }
+  },
+  "availability": {
+    "title": "My Availability",
+    "description": "Set your availability for each day. Click on a day to change your status.",
+    "setFor": "Set availability for",
+    "loadError": "Failed to load availability.",
+    "updateSuccess": "Availability updated.",
+    "updateError": "Failed to update availability.",
+    "months": {
+      "january": "January",
+      "february": "February",
+      "march": "March",
+      "april": "April",
+      "may": "May",
+      "june": "June",
+      "july": "July",
+      "august": "August",
+      "september": "September",
+      "october": "October",
+      "november": "November",
+      "december": "December"
+    },
+    "days": {
+      "sun": "Sun",
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat"
+    },
+    "slots": {
+      "fullDay": "Full Day",
+      "morning": "Morning",
+      "afternoon": "Afternoon",
+      "evening": "Evening",
+      "unavailable": "Unavailable",
+      "clear": "Clear"
     }
   }
 }
