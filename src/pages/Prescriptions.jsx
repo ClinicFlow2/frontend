@@ -15,6 +15,7 @@ import {
   deletePrescriptionTemplate,
   createPrescription,
   deletePrescription,
+  getPrescriptionDetail,
   getVisitsForPicker,
   unwrapListResults,
   downloadPrescriptionPdf,
@@ -133,6 +134,7 @@ export default function Prescriptions() {
 
   // View modal
   const [viewRx, setViewRx] = useState(null);
+  const [viewRxLoading, setViewRxLoading] = useState(false);
 
   // PDF download state
   const [downloadingId, setDownloadingId] = useState(null);
@@ -424,6 +426,19 @@ export default function Prescriptions() {
     setMessage({ type: "", text: "" });
     if (!visitFromQuery) setVisitId("");
     if (!patientFromQuery) setPatientId("");
+  }
+
+  async function handleViewPrescription(rxId) {
+    setViewRxLoading(true);
+    setViewRx(null);
+    try {
+      const detail = await getPrescriptionDetail(rxId);
+      setViewRx(detail);
+    } catch {
+      setMessage({ type: "error", text: t("prescriptionsPage.loadError") });
+    } finally {
+      setViewRxLoading(false);
+    }
   }
 
   async function handleDownloadPdf(rxId) {
@@ -1061,7 +1076,7 @@ export default function Prescriptions() {
                             <div className="rx-table-actions">
                               <button
                                 className="rx-btn rx-btn-sm"
-                                onClick={() => setViewRx(rx)}
+                                onClick={() => handleViewPrescription(rx.id)}
                               >
                                 {t("common.view")}
                               </button>
@@ -1097,78 +1112,168 @@ export default function Prescriptions() {
       </div>
 
       {/* View prescription modal */}
-      {viewRx && (
-        <div className="rx-modal-overlay" onClick={() => setViewRx(null)}>
-          <div className="rx-modal" onClick={(e) => e.stopPropagation()}>
+      {(viewRx || viewRxLoading) && (
+        <div className="rx-modal-overlay" onClick={() => !viewRxLoading && setViewRx(null)}>
+          <div className="rx-modal rx-view-modal" onClick={(e) => e.stopPropagation()}>
             <div className="rx-modal-header">
               <h3 className="rx-modal-title">
-                {t("visitDetail.prescriptionNumber", { id: viewRx.id })}
+                {viewRx ? t("visitDetail.prescriptionNumber", { id: viewRx.id }) : t("common.loading")}
               </h3>
-              <button className="rx-btn rx-btn-sm" onClick={() => setViewRx(null)}>
+              <button className="rx-btn rx-btn-sm" onClick={() => setViewRx(null)} disabled={viewRxLoading}>
                 {t("common.close")}
               </button>
             </div>
 
             <div className="rx-modal-body">
-              <div className="rx-detail-section">
-                <div className="rx-detail-label">{t("prescriptionsPage.patient")}</div>
-                <div className="rx-detail-value">{getPatientLabelFromRx(viewRx)}</div>
-              </div>
-
-              <div className="rx-detail-section">
-                <div className="rx-detail-label">{t("prescriptionsPage.visitColumn")}</div>
-                <div className="rx-detail-value">#{getVisitIdFromRx(viewRx)}</div>
-              </div>
-
-              <div className="rx-detail-section">
-                <div className="rx-detail-label">{t("prescriptions.medications")}</div>
-                {viewRx.items?.length > 0 ? (
-                  <div style={{ marginTop: 8 }}>
-                    {viewRx.items.map((item, idx) => (
-                      <div key={idx} className="rx-medication-item">
-                        <div className="rx-medication-name">
-                          {item.medication_display || item.medication?.name || `Medication #${item.medication}`}
-                        </div>
-                        <div className="rx-medication-details">
-                          {[item.dosage, item.route, item.frequency, item.duration]
-                            .filter(Boolean)
-                            .join(" | ")}
-                        </div>
-                        {item.instructions && (
-                          <div className="rx-medication-instructions">{item.instructions}</div>
-                        )}
+              {viewRxLoading ? (
+                <div style={{ textAlign: "center", padding: "40px 0", color: "var(--muted)" }}>
+                  {t("common.loading")}...
+                </div>
+              ) : viewRx && (
+                <>
+                  {/* Patient Info */}
+                  <div className="rx-detail-section">
+                    <div className="rx-detail-label">{t("prescriptionsPage.patient")}</div>
+                    <div className="rx-detail-value" style={{ fontWeight: 600 }}>
+                      {viewRx.patient?.first_name} {viewRx.patient?.last_name}
+                    </div>
+                    {viewRx.patient?.patient_code && (
+                      <div className="rx-detail-value" style={{ fontSize: "0.8rem", color: "var(--muted)" }}>
+                        {t("patients.patientCode")}: {viewRx.patient.patient_code}
                       </div>
-                    ))}
+                    )}
                   </div>
-                ) : (
-                  <div style={{ color: "var(--muted)" }}>{t("prescriptionsPage.noMedications")}</div>
-                )}
-              </div>
 
-              {viewRx.notes && (
-                <div className="rx-detail-section">
-                  <div className="rx-detail-label">{t("visits.notes")}</div>
-                  <div className="rx-detail-value rx-notes">{viewRx.notes}</div>
-                </div>
+                  {/* Visit Info */}
+                  <div className="rx-detail-section">
+                    <div className="rx-detail-label">{t("prescriptionsPage.visitColumn")}</div>
+                    {viewRx.visit ? (
+                      <div>
+                        <div className="rx-detail-value">
+                          #{viewRx.visit.id} - {viewRx.visit.visit_type === "CONSULTATION" ? t("patientVisits.consultation") : t("patientVisits.followUp")}
+                        </div>
+                        <div className="rx-detail-value" style={{ fontSize: "0.8rem", color: "var(--muted)" }}>
+                          {formatDateTime(viewRx.visit.visit_date)}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="rx-detail-value" style={{ color: "var(--muted)" }}>-</div>
+                    )}
+                  </div>
+
+                  {/* Medications */}
+                  <div className="rx-detail-section">
+                    <div className="rx-detail-label">{t("prescriptions.medications")} ({viewRx.items?.length || 0})</div>
+                    {viewRx.items?.length > 0 ? (
+                      <div style={{ marginTop: 8 }}>
+                        {viewRx.items.map((item, idx) => {
+                          const medName = item.medication?.name || `Medication #${item.medication}`;
+                          const medStrength = item.medication?.strength || "";
+                          const medForm = item.medication?.form || "";
+                          const medDisplay = [medName, medStrength, medForm].filter(Boolean).join(" ");
+
+                          return (
+                            <div key={idx} className="rx-medication-item" style={{
+                              background: "var(--surface)",
+                              padding: "12px",
+                              borderRadius: "8px",
+                              marginBottom: "8px",
+                              border: "1px solid var(--border)"
+                            }}>
+                              <div className="rx-medication-name" style={{ fontWeight: 600, marginBottom: 4 }}>
+                                {idx + 1}. {medDisplay}
+                              </div>
+                              <div className="rx-medication-details" style={{
+                                display: "grid",
+                                gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
+                                gap: "8px",
+                                fontSize: "0.85rem",
+                                marginTop: "8px"
+                              }}>
+                                {item.dosage && (
+                                  <div><span style={{ color: "var(--muted)" }}>{t("prescriptions.dosage")}:</span> {item.dosage}</div>
+                                )}
+                                {item.route && (
+                                  <div><span style={{ color: "var(--muted)" }}>{t("prescriptions.route")}:</span> {item.route}</div>
+                                )}
+                                {item.frequency && (
+                                  <div><span style={{ color: "var(--muted)" }}>{t("prescriptions.frequency")}:</span> {item.frequency}</div>
+                                )}
+                                {item.duration && (
+                                  <div><span style={{ color: "var(--muted)" }}>{t("prescriptions.duration")}:</span> {item.duration}</div>
+                                )}
+                              </div>
+                              {item.instructions && (
+                                <div className="rx-medication-instructions" style={{
+                                  marginTop: 8,
+                                  padding: "8px",
+                                  background: "var(--card)",
+                                  borderRadius: "6px",
+                                  fontSize: "0.85rem",
+                                  fontStyle: "italic"
+                                }}>
+                                  <span style={{ color: "var(--muted)" }}>{t("prescriptions.instructions")}:</span> {item.instructions}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div style={{ color: "var(--muted)", marginTop: 8 }}>{t("prescriptionsPage.noMedications")}</div>
+                    )}
+                  </div>
+
+                  {/* Notes */}
+                  {viewRx.notes && (
+                    <div className="rx-detail-section">
+                      <div className="rx-detail-label">{t("visits.notes")}</div>
+                      <div className="rx-detail-value rx-notes" style={{
+                        background: "var(--surface)",
+                        padding: "12px",
+                        borderRadius: "8px",
+                        whiteSpace: "pre-wrap"
+                      }}>
+                        {viewRx.notes}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Timestamps */}
+                  <div className="rx-detail-section" style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "16px",
+                    borderTop: "1px solid var(--border)",
+                    paddingTop: "12px",
+                    marginTop: "12px"
+                  }}>
+                    <div>
+                      <div className="rx-detail-label">{t("prescriptionsPage.created")}</div>
+                      <div className="rx-detail-value">{formatDateTime(viewRx.created_at)}</div>
+                    </div>
+                    {viewRx.updated_at && viewRx.updated_at !== viewRx.created_at && (
+                      <div>
+                        <div className="rx-detail-label">{t("common.updated")}</div>
+                        <div className="rx-detail-value">{formatDateTime(viewRx.updated_at)}</div>
+                      </div>
+                    )}
+                  </div>
+                </>
               )}
+            </div>
 
-              <div className="rx-detail-section">
-                <div className="rx-detail-label">{t("prescriptionsPage.created")}</div>
-                <div className="rx-detail-value">
-                  {formatDateTime(viewRx.created_at)}
-                </div>
+            {viewRx && (
+              <div className="rx-modal-footer">
+                <button
+                  className="rx-btn rx-btn-primary"
+                  onClick={() => handleDownloadPdf(viewRx.id)}
+                  disabled={downloadingId === viewRx.id}
+                >
+                  {downloadingId === viewRx.id ? t("visitDetail.downloading") : t("visitDetail.downloadPdf")}
+                </button>
               </div>
-            </div>
-
-            <div className="rx-modal-footer">
-              <button
-                className="rx-btn rx-btn-primary"
-                onClick={() => handleDownloadPdf(viewRx.id)}
-                disabled={downloadingId === viewRx.id}
-              >
-                {downloadingId === viewRx.id ? t("visitDetail.downloading") : t("visitDetail.downloadPdf")}
-              </button>
-            </div>
+            )}
           </div>
         </div>
       )}

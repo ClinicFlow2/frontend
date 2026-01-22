@@ -25,10 +25,13 @@ export default function PatientVisits() {
     visit_date: "", // optional, backend default = now
     visit_type: "CONSULTATION",
     chief_complaint: "",
+    medical_history: "",
     history_of_present_illness: "",
     physical_exam: "",
+    complementary_exam: "",
     assessment: "",
     plan: "",
+    treatment: "",
     notes: "",
   });
 
@@ -64,10 +67,13 @@ export default function PatientVisits() {
         visit_type: form.visit_type,
         ...(form.visit_date ? { visit_date: form.visit_date } : {}),
         chief_complaint: form.chief_complaint.trim(),
+        medical_history: form.medical_history.trim(),
         history_of_present_illness: form.history_of_present_illness.trim(),
         physical_exam: form.physical_exam.trim(),
+        complementary_exam: form.complementary_exam.trim(),
         assessment: form.assessment.trim(),
         plan: form.plan.trim(),
+        treatment: form.treatment.trim(),
         notes: form.notes.trim(),
       };
 
@@ -77,10 +83,13 @@ export default function PatientVisits() {
         ...f,
         visit_date: "",
         chief_complaint: "",
+        medical_history: "",
         history_of_present_illness: "",
         physical_exam: "",
+        complementary_exam: "",
         assessment: "",
         plan: "",
+        treatment: "",
         notes: "",
       }));
 
@@ -215,16 +224,29 @@ export default function PatientVisits() {
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 10 }}>
           <div>
+            <label style={label}>{t("patientVisits.medicalHistory")}</label>
+            <textarea
+              value={form.medical_history}
+              onChange={(e) => setForm((f) => ({ ...f, medical_history: e.target.value }))}
+              placeholder={t("patientVisits.medicalHistoryPlaceholder")}
+              style={textarea}
+              rows={4}
+            />
+          </div>
+
+          <div>
             <label style={label}>{t("patientVisits.historyOfPresentIllness")}</label>
             <textarea
               value={form.history_of_present_illness}
               onChange={(e) => setForm((f) => ({ ...f, history_of_present_illness: e.target.value }))}
               placeholder={t("patientVisits.hpiPlaceholder")}
               style={textarea}
-              rows={5}
+              rows={4}
             />
           </div>
+        </div>
 
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 10 }}>
           <div>
             <label style={label}>{t("patientVisits.physicalExam")}</label>
             <textarea
@@ -232,7 +254,18 @@ export default function PatientVisits() {
               onChange={(e) => setForm((f) => ({ ...f, physical_exam: e.target.value }))}
               placeholder={t("patientVisits.physicalExamPlaceholder")}
               style={textarea}
-              rows={5}
+              rows={4}
+            />
+          </div>
+
+          <div>
+            <label style={label}>{t("patientVisits.complementaryExam")}</label>
+            <textarea
+              value={form.complementary_exam}
+              onChange={(e) => setForm((f) => ({ ...f, complementary_exam: e.target.value }))}
+              placeholder={t("patientVisits.complementaryExamPlaceholder")}
+              style={textarea}
+              rows={4}
             />
           </div>
         </div>
@@ -259,6 +292,17 @@ export default function PatientVisits() {
               rows={4}
             />
           </div>
+        </div>
+
+        <div style={{ marginTop: 10 }}>
+          <label style={label}>{t("patientVisits.treatment")}</label>
+          <textarea
+            value={form.treatment}
+            onChange={(e) => setForm((f) => ({ ...f, treatment: e.target.value }))}
+            placeholder={t("patientVisits.treatmentPlaceholder")}
+            style={textarea}
+            rows={3}
+          />
         </div>
 
         <div style={{ marginTop: 10 }}>

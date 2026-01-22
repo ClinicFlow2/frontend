@@ -26,7 +26,8 @@
     "submit": "Submit",
     "required": "Required",
     "back": "Back",
-    "optional": "optional"
+    "optional": "optional",
+    "updated": "Updated"
   },
   "auth": {
     "login": "Login",
