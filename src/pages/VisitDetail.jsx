@@ -29,10 +29,13 @@ export default function VisitDetail() {
   const [editForm, setEditForm] = useState({
     visit_type: "",
     chief_complaint: "",
+    medical_history: "",
     history_of_present_illness: "",
     physical_exam: "",
+    complementary_exam: "",
     assessment: "",
     plan: "",
+    treatment: "",
     notes: "",
   });
 
@@ -97,10 +100,13 @@ export default function VisitDetail() {
       setEditForm({
         visit_type: v.visit_type || "CONSULTATION",
         chief_complaint: v.chief_complaint || "",
+        medical_history: v.medical_history || "",
         history_of_present_illness: v.history_of_present_illness || "",
         physical_exam: v.physical_exam || "",
+        complementary_exam: v.complementary_exam || "",
         assessment: v.assessment || "",
         plan: v.plan || "",
+        treatment: v.treatment || "",
         notes: v.notes || "",
       });
 
@@ -215,10 +221,13 @@ export default function VisitDetail() {
       const payload = {
         visit_type: editForm.visit_type,
         chief_complaint: editForm.chief_complaint.trim(),
+        medical_history: editForm.medical_history.trim(),
         history_of_present_illness: editForm.history_of_present_illness.trim(),
         physical_exam: editForm.physical_exam.trim(),
+        complementary_exam: editForm.complementary_exam.trim(),
         assessment: editForm.assessment.trim(),
         plan: editForm.plan.trim(),
+        treatment: editForm.treatment.trim(),
         notes: editForm.notes.trim(),
       };
 
@@ -359,6 +368,16 @@ export default function VisitDetail() {
                   </div>
 
                   <div>
+                    <label style={label}>{t("patientVisits.medicalHistory")}</label>
+                    <textarea
+                      value={editForm.medical_history}
+                      onChange={(e) => setEditForm((f) => ({ ...f, medical_history: e.target.value }))}
+                      style={textarea}
+                      rows={4}
+                    />
+                  </div>
+
+                  <div>
                     <label style={label}>{t("patientVisits.historyOfPresentIllness")}</label>
                     <textarea
                       value={editForm.history_of_present_illness}
@@ -379,6 +398,16 @@ export default function VisitDetail() {
                   </div>
 
                   <div>
+                    <label style={label}>{t("patientVisits.complementaryExam")}</label>
+                    <textarea
+                      value={editForm.complementary_exam}
+                      onChange={(e) => setEditForm((f) => ({ ...f, complementary_exam: e.target.value }))}
+                      style={textarea}
+                      rows={4}
+                    />
+                  </div>
+
+                  <div>
                     <label style={label}>{t("patientVisits.assessment")}</label>
                     <textarea
                       value={editForm.assessment}
@@ -393,6 +422,16 @@ export default function VisitDetail() {
                     <textarea
                       value={editForm.plan}
                       onChange={(e) => setEditForm((f) => ({ ...f, plan: e.target.value }))}
+                      style={textarea}
+                      rows={4}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={label}>{t("patientVisits.treatment")}</label>
+                    <textarea
+                      value={editForm.treatment}
+                      onChange={(e) => setEditForm((f) => ({ ...f, treatment: e.target.value }))}
                       style={textarea}
                       rows={4}
                     />
@@ -421,10 +460,13 @@ export default function VisitDetail() {
                       setEditForm({
                         visit_type: visit.visit_type || "CONSULTATION",
                         chief_complaint: visit.chief_complaint || "",
+                        medical_history: visit.medical_history || "",
                         history_of_present_illness: visit.history_of_present_illness || "",
                         physical_exam: visit.physical_exam || "",
+                        complementary_exam: visit.complementary_exam || "",
                         assessment: visit.assessment || "",
                         plan: visit.plan || "",
+                        treatment: visit.treatment || "",
                         notes: visit.notes || "",
                       });
                     }}
@@ -443,15 +485,26 @@ export default function VisitDetail() {
                   </div>
 
                   <div>
-                    <div style={kv}><b>{t("visitDetail.hpi")}:</b></div>
-                    <div style={box}>{visit.history_of_present_illness || "-"}</div>
+                    <b>{t("patientVisits.medicalHistory")}:</b>
+                    <div style={box}>{visit.medical_history || "-"}</div>
                   </div>
                 </div>
 
                 <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                   <div>
+                    <b>{t("visitDetail.hpi")}:</b>
+                    <div style={box}>{visit.history_of_present_illness || "-"}</div>
+                  </div>
+                  <div>
                     <b>{t("patientVisits.physicalExam")}:</b>
                     <div style={box}>{visit.physical_exam || "-"}</div>
+                  </div>
+                </div>
+
+                <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <div>
+                    <b>{t("patientVisits.complementaryExam")}:</b>
+                    <div style={box}>{visit.complementary_exam || "-"}</div>
                   </div>
                   <div>
                     <b>{t("patientVisits.assessment")}:</b>
@@ -465,9 +518,14 @@ export default function VisitDetail() {
                     <div style={box}>{visit.plan || "-"}</div>
                   </div>
                   <div>
-                    <b>{t("visits.notes")}:</b>
-                    <div style={box}>{visit.notes || "-"}</div>
+                    <b>{t("patientVisits.treatment")}:</b>
+                    <div style={box}>{visit.treatment || "-"}</div>
                   </div>
+                </div>
+
+                <div style={{ marginTop: 10 }}>
+                  <b>{t("visits.notes")}:</b>
+                  <div style={box}>{visit.notes || "-"}</div>
                 </div>
               </>
             )}

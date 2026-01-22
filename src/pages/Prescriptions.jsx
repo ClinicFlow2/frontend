@@ -403,8 +403,13 @@ export default function Prescriptions() {
       await loadSavedPrescriptions();
 
       if (visitFromQuery || patientFromQuery) setTimeout(() => navigate(-1), 250);
-    } catch {
-      setMessage({ type: "error", text: t("prescriptionsPage.createError") });
+    } catch (err) {
+      // Check if it's a permission error (403)
+      if (err?.response?.status === 403) {
+        setMessage({ type: "error", text: t("prescriptionsPage.permissionError") });
+      } else {
+        setMessage({ type: "error", text: t("prescriptionsPage.createError") });
+      }
     } finally {
       setIsSaving(false);
     }
@@ -1081,9 +1086,11 @@ export default function Prescriptions() {
                   </tbody>
                 </table>
               </div>
-              <p style={{ color: "var(--muted)", fontSize: "0.75rem", marginTop: 12 }}>
-                {t("prescriptionsPage.note")}
-              </p>
+              {t("prescriptionsPage.note") && (
+                <p style={{ color: "var(--muted)", fontSize: "0.75rem", marginTop: 12 }}>
+                  {t("prescriptionsPage.note")}
+                </p>
+              )}
             </>
           )}
         </div>
