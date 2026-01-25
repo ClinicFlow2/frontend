@@ -484,6 +484,9 @@
     "deleteSuccess": "File deleted successfully.",
     "deleteError": "Failed to delete file.",
     "confirmDelete": "Delete \"{{filename}}\"?",
+    "chooseFile": "Choose file",
+    "noFileSelected": "No file selected",
+    "category": "Category",
     "categories": {
       "labResult": "Lab Result",
       "imaging": "Imaging",

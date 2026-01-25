@@ -187,16 +187,25 @@ export default function PatientFiles({ patientId }) {
         <div style={styles.formGrid}>
           <div style={styles.formGroup}>
             <label style={styles.label}>{t("patientFiles.upload")}</label>
-            <input
-              ref={fileInputRef}
-              type="file"
-              onChange={(e) => setSelectedFile(e.target.files[0])}
-              style={styles.fileInput}
-              accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx"
-            />
+            <div style={styles.customFileInput}>
+              <input
+                ref={fileInputRef}
+                type="file"
+                onChange={(e) => setSelectedFile(e.target.files[0])}
+                style={styles.hiddenFileInput}
+                accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx"
+                id="patient-file-input"
+              />
+              <label htmlFor="patient-file-input" style={styles.fileInputLabel}>
+                {t("patientFiles.chooseFile")}
+              </label>
+              <span style={styles.fileInputText}>
+                {selectedFile ? selectedFile.name : t("patientFiles.noFileSelected")}
+              </span>
+            </div>
           </div>
           <div style={styles.formGroup}>
-            <label style={styles.label}>Catégorie</label>
+            <label style={styles.label}>{t("patientFiles.category")}</label>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
@@ -418,14 +427,41 @@ const styles = {
     fontWeight: 500,
     color: "var(--text-secondary, #6b7280)",
   },
-  fileInput: {
-    width: "100%",
-    padding: "8px 12px",
+  customFileInput: {
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+  },
+  hiddenFileInput: {
+    position: "absolute",
+    width: 1,
+    height: 1,
+    padding: 0,
+    margin: -1,
+    overflow: "hidden",
+    clip: "rect(0, 0, 0, 0)",
+    whiteSpace: "nowrap",
+    border: 0,
+  },
+  fileInputLabel: {
+    padding: "8px 16px",
+    background: "var(--input-bg, #fff)",
     border: "1px solid var(--border-color, #d1d5db)",
     borderRadius: 6,
     fontSize: "0.875rem",
-    background: "var(--input-bg, #fff)",
+    fontWeight: 500,
     color: "var(--text-primary, #1f2937)",
+    cursor: "pointer",
+    whiteSpace: "nowrap",
+    transition: "all 150ms ease",
+  },
+  fileInputText: {
+    fontSize: "0.875rem",
+    color: "var(--text-secondary, #6b7280)",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+    maxWidth: 300,
   },
   select: {
     padding: "8px 12px",
