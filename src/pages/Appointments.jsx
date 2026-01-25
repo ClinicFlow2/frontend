@@ -94,7 +94,7 @@ export default function Appointments() {
   const [doctorsLoading, setDoctorsLoading] = useState(false);
 
   // View mode: "list" or "calendar"
-  const [viewMode, setViewMode] = useState("list");
+  const [viewMode, setViewMode] = useState("calendar");
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [calendarAppointments, setCalendarAppointments] = useState([]);
 
