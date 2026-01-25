@@ -6,6 +6,8 @@ import { getPatient, updatePatient, archivePatient, restorePatient } from "../ap
 import { api } from "../api/client";
 import { getProfile } from "../api/profile";
 import { formatDate, formatTime } from "../utils/dateFormat";
+import PatientFiles from "../components/PatientFiles";
+import PatientPrescriptions from "../components/PatientPrescriptions";
 
 // Icons
 const Icons = {
@@ -568,6 +570,12 @@ export default function PatientDetail() {
           </div>
         </div>
       </div>
+
+      {/* Patient Prescriptions Section */}
+      <PatientPrescriptions patientId={id} />
+
+      {/* Patient Files Section */}
+      <PatientFiles patientId={id} />
     </div>
   );
 }

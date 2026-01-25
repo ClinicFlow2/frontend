@@ -394,6 +394,8 @@
     "licenseNumber": "License Number",
     "bio": "Bio",
     "bioPlaceholder": "Tell us about yourself...",
+    "clinicAddress": "Clinic Address",
+    "clinicAddressPlaceholder": "Enter your clinic/practice address (appears on prescriptions)",
     "memberSince": "Member Since",
     "changePassword": "Change Password",
     "currentPassword": "Current Password",
@@ -459,5 +461,39 @@
       "unavailable": "Unavailable",
       "clear": "Clear"
     }
+  },
+  "patientFiles": {
+    "title": "Patient Files",
+    "upload": "Upload",
+    "uploading": "Uploading...",
+    "download": "Download",
+    "view": "View",
+    "delete": "Delete",
+    "noFiles": "No files uploaded yet.",
+    "descriptionPlaceholder": "File description (optional)",
+    "loadError": "Failed to load files.",
+    "uploadSuccess": "File uploaded successfully.",
+    "uploadError": "Failed to upload file.",
+    "downloadError": "Failed to download file.",
+    "deleteSuccess": "File deleted successfully.",
+    "deleteError": "Failed to delete file.",
+    "confirmDelete": "Delete \"{{filename}}\"?",
+    "categories": {
+      "labResult": "Lab Result",
+      "imaging": "Imaging",
+      "prescription": "Prescription",
+      "consent": "Consent Form",
+      "insurance": "Insurance",
+      "other": "Other"
+    }
+  },
+  "patientPrescriptions": {
+    "title": "Prescriptions",
+    "newPrescription": "New Prescription",
+    "noPrescriptions": "No prescriptions yet.",
+    "prescription": "Prescription",
+    "items": "items",
+    "by": "by",
+    "loadError": "Failed to load prescriptions."
   }
 }

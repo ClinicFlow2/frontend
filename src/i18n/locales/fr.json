@@ -394,6 +394,8 @@
     "licenseNumber": "Numéro de licence",
     "bio": "Biographie",
     "bioPlaceholder": "Parlez-nous de vous...",
+    "clinicAddress": "Adresse du cabinet",
+    "clinicAddressPlaceholder": "Entrez l'adresse de votre cabinet/clinique (apparaît sur les ordonnances)",
     "memberSince": "Membre depuis",
     "changePassword": "Changer le mot de passe",
     "currentPassword": "Mot de passe actuel",
@@ -459,5 +461,39 @@
       "unavailable": "Indisponible",
       "clear": "Effacer"
     }
+  },
+  "patientFiles": {
+    "title": "Fichiers du patient",
+    "upload": "Télécharger",
+    "uploading": "Téléchargement...",
+    "download": "Télécharger",
+    "view": "Voir",
+    "delete": "Supprimer",
+    "noFiles": "Aucun fichier téléchargé.",
+    "descriptionPlaceholder": "Description du fichier (optionnel)",
+    "loadError": "Échec du chargement des fichiers.",
+    "uploadSuccess": "Fichier téléchargé avec succès.",
+    "uploadError": "Échec du téléchargement du fichier.",
+    "downloadError": "Échec du téléchargement du fichier.",
+    "deleteSuccess": "Fichier supprimé avec succès.",
+    "deleteError": "Échec de la suppression du fichier.",
+    "confirmDelete": "Supprimer \"{{filename}}\" ?",
+    "categories": {
+      "labResult": "Résultat de labo",
+      "imaging": "Imagerie",
+      "prescription": "Ordonnance",
+      "consent": "Formulaire de consentement",
+      "insurance": "Assurance",
+      "other": "Autre"
+    }
+  },
+  "patientPrescriptions": {
+    "title": "Ordonnances",
+    "newPrescription": "Nouvelle ordonnance",
+    "noPrescriptions": "Aucune ordonnance.",
+    "prescription": "Ordonnance",
+    "items": "médicaments",
+    "by": "par",
+    "loadError": "Échec du chargement des ordonnances."
   }
 }

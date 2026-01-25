@@ -39,3 +39,38 @@ export async function restorePatient(id) {
   const res = await api.post(`/api/patients/${id}/restore/`);
   return res.data;
 }
+
+// ============ Patient Files ============
+
+export async function getPatientFiles(patientId) {
+  const res = await api.get(`/api/patients/${patientId}/files/`);
+  return res.data;
+}
+
+export async function uploadPatientFile(patientId, file, category = "other", description = "") {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("category", category);
+  if (description) {
+    formData.append("description", description);
+  }
+
+  const res = await api.post(`/api/patients/${patientId}/files/`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return res.data;
+}
+
+export async function deletePatientFile(patientId, fileId) {
+  const res = await api.delete(`/api/patients/${patientId}/files/${fileId}/`);
+  return res.data;
+}
+
+export async function downloadPatientFile(patientId, fileId) {
+  const res = await api.get(`/api/patients/${patientId}/files/${fileId}/download/`, {
+    responseType: "blob",
+  });
+  return res.data;
+}

@@ -91,6 +91,7 @@ export default function Profile() {
     license_number: "",
     department: "",
     bio: "",
+    clinic_address: "",
   });
 
   // Password form state
@@ -122,6 +123,7 @@ export default function Profile() {
         license_number: data.profile?.license_number || "",
         department: data.profile?.department || "",
         bio: data.profile?.bio || "",
+        clinic_address: data.profile?.clinic_address || "",
       });
     } catch (err) {
       console.error("Failed to load profile:", err);
@@ -487,6 +489,17 @@ export default function Profile() {
                   placeholder={t("profile.bioPlaceholder")}
                 />
               </div>
+              {(role === "doctor" || role === "admin") && (
+                <div style={{ gridColumn: "1 / -1" }}>
+                  <label style={labelStyle}>{t("profile.clinicAddress")}</label>
+                  <textarea
+                    value={formData.clinic_address}
+                    onChange={(e) => setFormData({ ...formData, clinic_address: e.target.value })}
+                    style={{ ...inputStyle, minHeight: 80, resize: "vertical" }}
+                    placeholder={t("profile.clinicAddressPlaceholder")}
+                  />
+                </div>
+              )}
             </div>
 
             <div style={{ display: "flex", gap: 12, marginTop: 20 }}>
@@ -521,6 +534,7 @@ export default function Profile() {
                     license_number: user?.profile?.license_number || "",
                     department: user?.profile?.department || "",
                     bio: user?.profile?.bio || "",
+                    clinic_address: user?.profile?.clinic_address || "",
                   });
                 }}
                 style={{
@@ -557,6 +571,16 @@ export default function Profile() {
                 </p>
                 <p style={{ margin: 0, color: "var(--text)", fontSize: "0.9375rem", lineHeight: 1.6 }}>
                   {user.profile.bio}
+                </p>
+              </div>
+            )}
+            {user?.profile?.clinic_address && (
+              <div style={{ gridColumn: "1 / -1" }}>
+                <p style={{ margin: 0, color: "var(--muted)", fontSize: "0.8125rem", marginBottom: 4 }}>
+                  {t("profile.clinicAddress")}
+                </p>
+                <p style={{ margin: 0, color: "var(--text)", fontSize: "0.9375rem", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
+                  {user.profile.clinic_address}
                 </p>
               </div>
             )}

@@ -1051,9 +1051,7 @@ export default function Prescriptions() {
                 <table className="rx-table">
                   <thead>
                     <tr>
-                      <th>{t("prescriptionsPage.rxNumber")}</th>
                       <th>{t("prescriptionsPage.patient")}</th>
-                      <th>{t("prescriptionsPage.visitColumn")}</th>
                       <th>{t("prescriptionsPage.created")}</th>
                       <th>{t("common.actions")}</th>
                     </tr>
@@ -1061,16 +1059,13 @@ export default function Prescriptions() {
                   <tbody>
                     {filteredPrescriptions.map((rx) => {
                       const rxId = rx?.id ?? "-";
-                      const vId = getVisitIdFromRx(rx);
                       const patientLabel = getPatientLabelFromRx(rx);
                       const createdAt = rx?.created_at ?? rx?.created ?? rx?.createdAt ?? null;
                       const createdLabel = formatDateTime(createdAt);
 
                       return (
                         <tr key={String(rxId)}>
-                          <td><strong>#{rxId}</strong></td>
                           <td title={patientLabel}>{patientLabel}</td>
-                          <td>#{vId}</td>
                           <td>{createdLabel}</td>
                           <td>
                             <div className="rx-table-actions">
@@ -1117,7 +1112,7 @@ export default function Prescriptions() {
           <div className="rx-modal rx-view-modal" onClick={(e) => e.stopPropagation()}>
             <div className="rx-modal-header">
               <h3 className="rx-modal-title">
-                {viewRx ? t("visitDetail.prescriptionNumber", { id: viewRx.id }) : t("common.loading")}
+                {viewRx ? t("prescriptions.title") : t("common.loading")}
               </h3>
               <button className="rx-btn rx-btn-sm" onClick={() => setViewRx(null)} disabled={viewRxLoading}>
                 {t("common.close")}
