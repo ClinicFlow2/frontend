@@ -1,5 +1,5 @@
 // src/layouts/DashboardLayout.jsx
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Link, Outlet, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import ThemeToggle from "../components/ThemeToggle";
 import LanguageSwitcher from "../components/LanguageSwitcher";
@@ -106,17 +106,20 @@ export default function DashboardLayout() {
       >
         {/* Logo */}
         <div style={{ padding: "4px 8px 24px" }}>
-          <img
-            src={logo}
-            alt="ClinicFlowHQ"
-            style={{
-              width: "100%",
-              maxWidth: 180,
-              height: "auto",
-              display: "block",
-              borderRadius: 8,
-            }}
-          />
+          <Link to="/dashboard">
+            <img
+              src={logo}
+              alt="ClinicFlowHQ"
+              style={{
+                width: "100%",
+                maxWidth: 180,
+                height: "auto",
+                display: "block",
+                borderRadius: 8,
+                cursor: "pointer",
+              }}
+            />
+          </Link>
         </div>
 
         {/* Navigation */}
