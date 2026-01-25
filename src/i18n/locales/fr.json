@@ -27,7 +27,8 @@
     "required": "Obligatoire",
     "back": "Retour",
     "optional": "optionnel",
-    "updated": "Mise à jour"
+    "updated": "Mise à jour",
+    "more": "de plus"
   },
   "auth": {
     "login": "Connexion",
@@ -374,7 +375,15 @@
     "selectDoctor": "Sélectionner un médecin...",
     "allDoctors": "Tous les médecins",
     "filterByDoctor": "Filtrer par médecin",
-    "cannotBeInPast": "Le rendez-vous ne peut pas être planifié dans le passé."
+    "cannotBeInPast": "Le rendez-vous ne peut pas être planifié dans le passé.",
+    "listView": "Liste",
+    "calendarView": "Calendrier",
+    "today": "Aujourd'hui",
+    "previousMonth": "Précédent",
+    "nextMonth": "Suivant",
+    "appointment": "rendez-vous",
+    "appointmentsPlural": "rendez-vous",
+    "noAppointmentsOnDay": "Aucun rendez-vous ce jour"
   },
   "language": {
     "select": "Langue",

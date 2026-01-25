@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { api } from "../api/client";
 import { formatDateTime } from "../utils/dateFormat";
+import AppointmentsCalendar from "../components/AppointmentsCalendar";
+import DayAppointmentsModal from "../components/DayAppointmentsModal";
 
 // Icons
 const Icons = {
@@ -26,6 +28,12 @@ const Icons = {
   User: () => (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+    </svg>
+  ),
+  List: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/>
+      <line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/>
     </svg>
   ),
 };
@@ -84,6 +92,15 @@ export default function Appointments() {
 
   const [doctors, setDoctors] = useState([]);
   const [doctorsLoading, setDoctorsLoading] = useState(false);
+
+  // View mode: "list" or "calendar"
+  const [viewMode, setViewMode] = useState("list");
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [calendarAppointments, setCalendarAppointments] = useState([]);
+
+  // Day detail modal
+  const [selectedDay, setSelectedDay] = useState(null);
+  const [selectedDayAppointments, setSelectedDayAppointments] = useState([]);
 
   // Filters
   const [filterPatient, setFilterPatient] = useState("");
@@ -167,12 +184,67 @@ export default function Appointments() {
     }
   }
 
+  async function loadCalendarAppointments(monthDate) {
+    setLoading(true);
+    setError("");
+    try {
+      // Get first and last day of the month (with some padding for display)
+      const year = monthDate.getFullYear();
+      const month = monthDate.getMonth();
+      const startDate = new Date(year, month - 1, 1); // Include prev month for padding
+      const endDate = new Date(year, month + 2, 0); // Include next month for padding
+
+      const params = {
+        page: 1,
+        page_size: 500,
+        start_date: startDate.toISOString().split("T")[0],
+        end_date: endDate.toISOString().split("T")[0],
+      };
+      if (filterPatient) params.patient = filterPatient;
+      if (filterStatus) params.status = filterStatus;
+
+      const res = await api.get("/api/appointments/", { params });
+      setCalendarAppointments(unwrapList(res.data));
+    } catch (e) {
+      console.log("LOAD CALENDAR APPOINTMENTS ERROR:", e?.response?.data || e);
+      setError(t("appointments.endpointFailed"));
+      setCalendarAppointments([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handleDayClick(date, appointments) {
+    if (appointments.length > 0) {
+      setSelectedDay(date);
+      setSelectedDayAppointments(appointments);
+    }
+  }
+
+  function handleCalendarAppointmentClick(appt) {
+    setSelectedDay(null);
+    setSelectedDayAppointments([]);
+    beginEdit(appt);
+  }
+
+  function handleMonthChange(newMonth) {
+    setCurrentMonth(newMonth);
+  }
+
   useEffect(() => {
     loadPatients();
     loadDoctors();
     loadAppointments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Load calendar appointments when view mode changes or month changes
+  useEffect(() => {
+    if (viewMode === "calendar") {
+      loadCalendarAppointments(currentMonth);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewMode, currentMonth, filterPatient, filterStatus]);
 
   async function handleCreate(e) {
     e.preventDefault();
@@ -181,7 +253,7 @@ export default function Appointments() {
 
     try {
       const payload = {
-        patient: Number(form.patient),
+        patient_id: Number(form.patient),
         doctor: form.doctor ? Number(form.doctor) : null,
         scheduled_at: new Date(form.scheduled_at).toISOString(),
         status: form.status,
@@ -190,7 +262,7 @@ export default function Appointments() {
         visit: form.visit ? Number(form.visit) : null,
       };
 
-      if (!payload.patient || Number.isNaN(payload.patient)) {
+      if (!payload.patient_id || Number.isNaN(payload.patient_id)) {
         setError(t("appointments.selectPatientError"));
         setSaving(false);
         return;
@@ -258,7 +330,7 @@ export default function Appointments() {
 
     try {
       const payload = {
-        patient: Number(editForm.patient),
+        patient_id: Number(editForm.patient),
         doctor: editForm.doctor ? Number(editForm.doctor) : null,
         scheduled_at: editForm.scheduled_at ? new Date(editForm.scheduled_at).toISOString() : null,
         status: editForm.status,
@@ -487,6 +559,51 @@ export default function Appointments() {
         </form>
       )}
 
+      {/* View Toggle */}
+      <div style={{ display: "flex", gap: 4, marginBottom: 16 }}>
+        <button
+          onClick={() => setViewMode("list")}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "8px 16px",
+            borderRadius: "8px 0 0 8px",
+            border: "1px solid var(--border)",
+            borderRight: "none",
+            background: viewMode === "list" ? "var(--accent)" : "var(--card)",
+            color: viewMode === "list" ? "white" : "var(--text)",
+            cursor: "pointer",
+            fontWeight: 500,
+            fontSize: "0.875rem",
+            transition: "all 150ms ease",
+          }}
+        >
+          <Icons.List />
+          {t("appointments.listView")}
+        </button>
+        <button
+          onClick={() => setViewMode("calendar")}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "8px 16px",
+            borderRadius: "0 8px 8px 0",
+            border: "1px solid var(--border)",
+            background: viewMode === "calendar" ? "var(--accent)" : "var(--card)",
+            color: viewMode === "calendar" ? "white" : "var(--text)",
+            cursor: "pointer",
+            fontWeight: 500,
+            fontSize: "0.875rem",
+            transition: "all 150ms ease",
+          }}
+        >
+          <Icons.Calendar />
+          {t("appointments.calendarView")}
+        </button>
+      </div>
+
       {/* Filters */}
       <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap", alignItems: "flex-end" }}>
         <div style={{ minWidth: 200 }}>
@@ -515,19 +632,25 @@ export default function Appointments() {
           </select>
         </div>
 
-        <div style={{ minWidth: 140 }}>
-          <label style={labelStyle}>{t("appointments.upcomingOnly")}</label>
-          <select value={filterUpcoming ? "yes" : "no"} onChange={(e) => setFilterUpcoming(e.target.value === "yes")}>
-            <option value="yes">{t("common.yes")}</option>
-            <option value="no">{t("common.no")}</option>
-          </select>
-        </div>
+        {viewMode === "list" && (
+          <div style={{ minWidth: 140 }}>
+            <label style={labelStyle}>{t("appointments.upcomingOnly")}</label>
+            <select value={filterUpcoming ? "yes" : "no"} onChange={(e) => setFilterUpcoming(e.target.value === "yes")}>
+              <option value="yes">{t("common.yes")}</option>
+              <option value="no">{t("common.no")}</option>
+            </select>
+          </div>
+        )}
 
-        <button onClick={loadAppointments} disabled={loading} style={{
-          display: "flex", alignItems: "center", gap: 6, padding: "10px 16px", borderRadius: 8,
-          border: "1px solid var(--border)", background: "var(--card)", color: "var(--text)",
-          cursor: loading ? "not-allowed" : "pointer", fontWeight: 500, fontSize: "0.875rem",
-        }}>
+        <button
+          onClick={() => viewMode === "calendar" ? loadCalendarAppointments(currentMonth) : loadAppointments()}
+          disabled={loading}
+          style={{
+            display: "flex", alignItems: "center", gap: 6, padding: "10px 16px", borderRadius: 8,
+            border: "1px solid var(--border)", background: "var(--card)", color: "var(--text)",
+            cursor: loading ? "not-allowed" : "pointer", fontWeight: 500, fontSize: "0.875rem",
+          }}
+        >
           <Icons.Refresh />
           {loading ? t("common.loading") : t("common.refresh")}
         </button>
@@ -553,7 +676,32 @@ export default function Appointments() {
         </div>
       )}
 
-      {/* Appointments Table */}
+      {/* Calendar View */}
+      {viewMode === "calendar" && (
+        <>
+          <AppointmentsCalendar
+            appointments={calendarAppointments}
+            currentMonth={currentMonth}
+            onMonthChange={handleMonthChange}
+            onDayClick={handleDayClick}
+            onAppointmentClick={handleCalendarAppointmentClick}
+          />
+          {selectedDay && (
+            <DayAppointmentsModal
+              date={selectedDay}
+              appointments={selectedDayAppointments}
+              onClose={() => {
+                setSelectedDay(null);
+                setSelectedDayAppointments([]);
+              }}
+              onAppointmentClick={handleCalendarAppointmentClick}
+            />
+          )}
+        </>
+      )}
+
+      {/* Appointments Table (List View) */}
+      {viewMode === "list" && (
       <div style={{ border: "1px solid var(--border)", borderRadius: 16, background: "var(--card)", overflow: "hidden" }}>
         {loading ? (
           <TableSkeleton />
@@ -733,6 +881,7 @@ export default function Appointments() {
           </div>
         )}
       </div>
+      )}
     </div>
   );
 }

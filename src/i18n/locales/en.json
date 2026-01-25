@@ -27,7 +27,8 @@
     "required": "Required",
     "back": "Back",
     "optional": "optional",
-    "updated": "Updated"
+    "updated": "Updated",
+    "more": "more"
   },
   "auth": {
     "login": "Login",
@@ -374,7 +375,15 @@
     "selectDoctor": "Select doctor...",
     "allDoctors": "All doctors",
     "filterByDoctor": "Filter by doctor",
-    "cannotBeInPast": "Appointment cannot be scheduled in the past."
+    "cannotBeInPast": "Appointment cannot be scheduled in the past.",
+    "listView": "List",
+    "calendarView": "Calendar",
+    "today": "Today",
+    "previousMonth": "Previous",
+    "nextMonth": "Next",
+    "appointment": "appointment",
+    "appointmentsPlural": "appointments",
+    "noAppointmentsOnDay": "No appointments on this day"
   },
   "language": {
     "select": "Language",
