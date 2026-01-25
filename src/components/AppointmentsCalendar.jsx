@@ -314,21 +314,14 @@ export default function AppointmentsCalendar({
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 4,
+                        maxWidth: "100%",
                       }}
                     >
                       <span style={{ fontWeight: 600 }}>
                         {formatTime(appt.scheduled_at)}
                       </span>
-                      <span
-                        style={{
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
+                      {" "}
+                      <span>
                         {patient.name}{appt.reason ? ` - ${appt.reason}` : ""}
                       </span>
                     </div>
