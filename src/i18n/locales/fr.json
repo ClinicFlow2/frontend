@@ -383,7 +383,10 @@
     "nextMonth": "Suivant",
     "appointment": "rendez-vous",
     "appointmentsPlural": "rendez-vous",
-    "noAppointmentsOnDay": "Aucun rendez-vous ce jour"
+    "noAppointmentsOnDay": "Aucun rendez-vous ce jour",
+    "reminderOn": "Rappel : ON",
+    "reminderOff": "Rappel : OFF",
+    "reminderToggleFailed": "Impossible de modifier le rappel. Veuillez réessayer."
   },
   "language": {
     "select": "Langue",

@@ -36,6 +36,17 @@ const Icons = {
       <line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/>
     </svg>
   ),
+  Bell: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+    </svg>
+  ),
+  BellOff: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M8.7 3A6 6 0 0 1 18 8a21.3 21.3 0 0 0 .6 5"/><path d="M17 17H3s3-2 3-9a4.67 4.67 0 0 1 .3-1.7"/>
+      <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path d="m2 2 20 20"/>
+    </svg>
+  ),
 };
 
 function unwrapList(data) {
@@ -381,6 +392,43 @@ export default function Appointments() {
       setError(detail ? JSON.stringify(detail, null, 2) : t("appointments.deleteFailed"));
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function toggleReminder(appt) {
+    const newValue = !appt.reminders_enabled;
+
+    // Optimistic update
+    setItems((prev) =>
+      prev.map((item) =>
+        item.id === appt.id ? { ...item, reminders_enabled: newValue } : item
+      )
+    );
+    setCalendarAppointments((prev) =>
+      prev.map((item) =>
+        item.id === appt.id ? { ...item, reminders_enabled: newValue } : item
+      )
+    );
+
+    try {
+      await api.patch(`/api/appointments/${appt.id}/`, {
+        reminders_enabled: newValue,
+      });
+    } catch (e) {
+      // Revert on error
+      setItems((prev) =>
+        prev.map((item) =>
+          item.id === appt.id ? { ...item, reminders_enabled: !newValue } : item
+        )
+      );
+      setCalendarAppointments((prev) =>
+        prev.map((item) =>
+          item.id === appt.id ? { ...item, reminders_enabled: !newValue } : item
+        )
+      );
+      const detail = e?.response?.data;
+      console.log("TOGGLE REMINDER ERROR:", detail || e);
+      setError(t("appointments.reminderToggleFailed"));
     }
   }
 
@@ -862,7 +910,23 @@ export default function Appointments() {
                         {a.reason || "-"}
                       </td>
                       <td style={tdStyle}>
-                        <div style={{ display: "flex", gap: 8 }}>
+                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                          <button
+                            onClick={() => toggleReminder(a)}
+                            title={a.reminders_enabled ? t("appointments.reminderOn") : t("appointments.reminderOff")}
+                            style={{
+                              ...actionBtnStyle,
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 4,
+                              background: a.reminders_enabled ? "rgba(34, 197, 94, 0.1)" : "var(--card)",
+                              borderColor: a.reminders_enabled ? "rgba(34, 197, 94, 0.3)" : "var(--border)",
+                              color: a.reminders_enabled ? "#22c55e" : "var(--muted)",
+                            }}
+                          >
+                            {a.reminders_enabled ? <Icons.Bell /> : <Icons.BellOff />}
+                            {a.reminders_enabled ? t("appointments.reminderOn") : t("appointments.reminderOff")}
+                          </button>
                           <button onClick={() => beginEdit(a)} style={actionBtnStyle}>{t("common.edit")}</button>
                           <button
                             onClick={() => deleteAppointment(a.id)}
