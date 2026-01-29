@@ -384,9 +384,10 @@
     "appointment": "appointment",
     "appointmentsPlural": "appointments",
     "noAppointmentsOnDay": "No appointments on this day",
-    "reminderOn": "Reminder: ON",
-    "reminderOff": "Reminder: OFF",
-    "reminderToggleFailed": "Failed to toggle reminder. Please try again."
+    "reminderOn": "Reminder: On",
+    "reminderOff": "Reminder: Off",
+    "reminderToggleFailed": "Failed to toggle reminder. Please try again.",
+    "reminderSentAt": "SMS sent on"
   },
   "language": {
     "select": "Language",

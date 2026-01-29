@@ -384,9 +384,10 @@
     "appointment": "rendez-vous",
     "appointmentsPlural": "rendez-vous",
     "noAppointmentsOnDay": "Aucun rendez-vous ce jour",
-    "reminderOn": "Rappel : ON",
-    "reminderOff": "Rappel : OFF",
-    "reminderToggleFailed": "Impossible de modifier le rappel. Veuillez réessayer."
+    "reminderOn": "Rappel : Activé",
+    "reminderOff": "Rappel : Désactivé",
+    "reminderToggleFailed": "Impossible de modifier le rappel. Veuillez réessayer.",
+    "reminderSentAt": "SMS envoyé le"
   },
   "language": {
     "select": "Langue",
