@@ -1,7 +1,13 @@
 // src/api/client.js
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+// Support both VITE_API_URL (local .env files) and VITE_API_BASE_URL (Render env var)
+const API_BASE_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || "";
+
+// Log the API URL for debugging (only in development)
+if (import.meta.env.DEV) {
+  console.log("[API] Base URL:", API_BASE_URL);
+}
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
