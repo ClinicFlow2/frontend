@@ -220,7 +220,10 @@
     "temp": "Temp",
     "showingLatest8": "Showing latest 8 records.",
     "printSummary": "Print Summary",
-    "summaryPdfError": "Failed to download visit summary. Please try again."
+    "summaryPdfError": "Failed to download visit summary. Please try again.",
+    "editVitals": "Edit vital signs",
+    "vitalsUpdateSuccess": "Vital signs updated successfully.",
+    "vitalsUpdateError": "Failed to update vital signs. Please try again."
   },
   "prescriptions": {
     "title": "Prescriptions",

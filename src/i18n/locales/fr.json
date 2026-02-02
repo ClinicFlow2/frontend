@@ -220,7 +220,10 @@
     "temp": "Temp",
     "showingLatest8": "Affichage des 8 derniers enregistrements.",
     "printSummary": "Imprimer résumé",
-    "summaryPdfError": "Échec du téléchargement du résumé de visite. Veuillez réessayer."
+    "summaryPdfError": "Échec du téléchargement du résumé de visite. Veuillez réessayer.",
+    "editVitals": "Modifier les signes vitaux",
+    "vitalsUpdateSuccess": "Signes vitaux mis à jour avec succès.",
+    "vitalsUpdateError": "Échec de la mise à jour des signes vitaux. Veuillez réessayer."
   },
   "prescriptions": {
     "title": "Ordonnances",

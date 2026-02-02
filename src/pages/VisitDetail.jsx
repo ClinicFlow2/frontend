@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { getPatient } from "../api/patients";
-import { createVitals, getVisit, getVitals, updateVisit, downloadPrescriptionPdf, downloadVisitSummaryPdf } from "../api/visits";
+import { createVitals, getVisit, getVitals, updateVitals, updateVisit, downloadPrescriptionPdf, downloadVisitSummaryPdf } from "../api/visits";
 import { getPrescriptions, unwrapListResults } from "../api/prescriptions";
 import { formatDateTime } from "../utils/dateFormat";
 
@@ -49,6 +49,12 @@ export default function VisitDetail() {
   const [summaryDownloading, setSummaryDownloading] = useState(false);
 
   const [showVitalsForm, setShowVitalsForm] = useState(false);
+
+  // Edit vitals modal state
+  const [editingVitals, setEditingVitals] = useState(null); // the vitals record being edited, or null
+  const [vitalsEditForm, setVitalsEditForm] = useState({});
+  const [vitalsEditSaving, setVitalsEditSaving] = useState(false);
+  const [vitalsEditError, setVitalsEditError] = useState("");
 
   const [form, setForm] = useState({
     measured_at: "",
@@ -211,6 +217,67 @@ export default function VisitDetail() {
       setError(t("visitDetail.vitalsError"));
     } finally {
       setSaving(false);
+    }
+  }
+
+  function openVitalsEdit(record) {
+    setVitalsEditError("");
+    setVitalsEditForm({
+      measured_at: record.measured_at ? record.measured_at.slice(0, 16) : "",
+      weight_kg: record.weight_kg ?? "",
+      height_cm: record.height_cm ?? "",
+      temperature_c: record.temperature_c ?? "",
+      bp_systolic: record.bp_systolic ?? "",
+      bp_diastolic: record.bp_diastolic ?? "",
+      heart_rate_bpm: record.heart_rate_bpm ?? "",
+      respiratory_rate_rpm: record.respiratory_rate_rpm ?? "",
+      oxygen_saturation_pct: record.oxygen_saturation_pct ?? "",
+      head_circumference_cm: record.head_circumference_cm ?? "",
+      notes: record.notes ?? "",
+    });
+    setEditingVitals(record);
+  }
+
+  function closeVitalsEdit() {
+    setEditingVitals(null);
+    setVitalsEditError("");
+  }
+
+  async function handleUpdateVitals(e) {
+    e.preventDefault();
+    setVitalsEditSaving(true);
+    setVitalsEditError("");
+
+    try {
+      const f = vitalsEditForm;
+      const payload = {
+        ...(f.measured_at ? { measured_at: f.measured_at } : {}),
+        weight_kg: toNumberOrNull(f.weight_kg),
+        height_cm: toNumberOrNull(f.height_cm),
+        temperature_c: toNumberOrNull(f.temperature_c),
+        head_circumference_cm: toNumberOrNull(f.head_circumference_cm),
+        bp_systolic: toNumberOrNull(f.bp_systolic, { int: true }),
+        bp_diastolic: toNumberOrNull(f.bp_diastolic, { int: true }),
+        heart_rate_bpm: toNumberOrNull(f.heart_rate_bpm, { int: true }),
+        respiratory_rate_rpm: toNumberOrNull(f.respiratory_rate_rpm, { int: true }),
+        oxygen_saturation_pct: toNumberOrNull(f.oxygen_saturation_pct, { int: true }),
+        notes: String(f.notes || "").trim() || "",
+      };
+
+      const updated = await updateVitals(editingVitals.id, payload);
+
+      // Update local state without full reload
+      setVitals((prev) =>
+        prev.map((v) => (v.id === editingVitals.id ? { ...v, ...updated } : v))
+      );
+
+      setEditingVitals(null);
+      setSuccess(t("visitDetail.vitalsUpdateSuccess"));
+    } catch (err) {
+      console.log("UPDATE VITALS ERROR:", err?.response?.data || err);
+      setVitalsEditError(t("visitDetail.vitalsUpdateError"));
+    } finally {
+      setVitalsEditSaving(false);
     }
   }
 
@@ -712,6 +779,7 @@ export default function VisitDetail() {
                       <th style={th}>BP</th>
                       <th style={th}>HR</th>
                       <th style={th}>SpO2</th>
+                      <th style={{ ...th, textAlign: "right" }}></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -722,6 +790,11 @@ export default function VisitDetail() {
                         <td style={td}>{x.bp_systolic != null && x.bp_diastolic != null ? `${x.bp_systolic}/${x.bp_diastolic}` : "-"}</td>
                         <td style={td}>{x.heart_rate_bpm != null ? x.heart_rate_bpm : "-"}</td>
                         <td style={td}>{x.oxygen_saturation_pct != null ? `${x.oxygen_saturation_pct}%` : "-"}</td>
+                        <td style={{ ...td, textAlign: "right" }}>
+                          <button onClick={() => openVitalsEdit(x)} style={btnSmall}>
+                            {t("common.edit")}
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -737,6 +810,68 @@ export default function VisitDetail() {
           </Card>
         </div>
       </div>
+
+      {/* Vitals edit modal */}
+      {editingVitals && (
+        <div style={modalOverlay} onClick={closeVitalsEdit}>
+          <div style={modalContent} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+              <h3 style={{ margin: 0, fontSize: 18, color: "var(--text)" }}>{t("visitDetail.editVitals")}</h3>
+              <button onClick={closeVitalsEdit} style={{ ...btn, padding: "6px 10px", fontSize: 16, lineHeight: 1 }}>✕</button>
+            </div>
+
+            {vitalsEditError && <div style={{ ...errorStyle, marginTop: 0, marginBottom: 12, maxWidth: "none" }}>{vitalsEditError}</div>}
+
+            <form onSubmit={handleUpdateVitals}>
+              <div style={{ display: "grid", gap: 10 }}>
+                <div>
+                  <label style={label}>{t("visitDetail.measuredAt")}</label>
+                  <input
+                    type="datetime-local"
+                    value={vitalsEditForm.measured_at}
+                    onChange={(e) => setVitalsEditForm((f) => ({ ...f, measured_at: e.target.value }))}
+                    style={input}
+                  />
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  <Field labelText={t("visitDetail.temperatureC")} value={vitalsEditForm.temperature_c} onChange={(v) => setVitalsEditForm((f) => ({ ...f, temperature_c: v }))} placeholder="38.5" />
+                  <Field labelText={t("visitDetail.oxygenSat")} value={vitalsEditForm.oxygen_saturation_pct} onChange={(v) => setVitalsEditForm((f) => ({ ...f, oxygen_saturation_pct: v }))} placeholder="98" />
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  <Field labelText={t("visitDetail.weightKg")} value={vitalsEditForm.weight_kg} onChange={(v) => setVitalsEditForm((f) => ({ ...f, weight_kg: v }))} placeholder="70" />
+                  <Field labelText={t("visitDetail.heightCm")} value={vitalsEditForm.height_cm} onChange={(v) => setVitalsEditForm((f) => ({ ...f, height_cm: v }))} placeholder="175" />
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  <Field labelText={t("visitDetail.bpSystolic")} value={vitalsEditForm.bp_systolic} onChange={(v) => setVitalsEditForm((f) => ({ ...f, bp_systolic: v }))} placeholder="120" />
+                  <Field labelText={t("visitDetail.bpDiastolic")} value={vitalsEditForm.bp_diastolic} onChange={(v) => setVitalsEditForm((f) => ({ ...f, bp_diastolic: v }))} placeholder="80" />
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  <Field labelText={t("visitDetail.heartRateBpm")} value={vitalsEditForm.heart_rate_bpm} onChange={(v) => setVitalsEditForm((f) => ({ ...f, heart_rate_bpm: v }))} placeholder="85" />
+                  <Field labelText={t("visitDetail.respRateRpm")} value={vitalsEditForm.respiratory_rate_rpm} onChange={(v) => setVitalsEditForm((f) => ({ ...f, respiratory_rate_rpm: v }))} placeholder="18" />
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  <Field labelText={t("visitDetail.headCircumferenceCm")} value={vitalsEditForm.head_circumference_cm} onChange={(v) => setVitalsEditForm((f) => ({ ...f, head_circumference_cm: v }))} placeholder="47" />
+                  <Field labelText={t("visits.notes")} value={vitalsEditForm.notes} onChange={(v) => setVitalsEditForm((f) => ({ ...f, notes: v }))} placeholder={t("patientVisits.notesPlaceholder")} />
+                </div>
+              </div>
+
+              <div style={{ marginTop: 16, display: "flex", gap: 10 }}>
+                <button type="submit" disabled={vitalsEditSaving} style={{ ...btnPrimary, flex: 1 }}>
+                  {vitalsEditSaving ? t("common.saving") : t("common.save")}
+                </button>
+                <button type="button" onClick={closeVitalsEdit} disabled={vitalsEditSaving} style={btn}>
+                  {t("common.cancel")}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -885,6 +1020,45 @@ const vRow = {
   borderRadius: 14,
   border: "1px solid var(--border)",
   background: "var(--surface)",
+  color: "var(--text)",
+};
+
+const btnSmall = {
+  padding: "5px 12px",
+  borderRadius: 8,
+  border: "1px solid var(--border)",
+  background: "var(--card)",
+  color: "var(--text)",
+  cursor: "pointer",
+  fontWeight: 500,
+  fontSize: "0.75rem",
+  transition: "all 150ms ease",
+  whiteSpace: "nowrap",
+};
+
+const modalOverlay = {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  background: "rgba(0, 0, 0, 0.5)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  zIndex: 1000,
+  padding: 20,
+};
+
+const modalContent = {
+  background: "var(--card)",
+  borderRadius: 16,
+  padding: 24,
+  width: "100%",
+  maxWidth: 520,
+  maxHeight: "85vh",
+  overflowY: "auto",
+  boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
   color: "var(--text)",
 };
 
