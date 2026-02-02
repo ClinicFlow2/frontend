@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { api } from "../api/client";
-import { formatDateTime } from "../utils/dateFormat";
+import { formatDateTimeLong } from "../utils/dateFormat";
 import AppointmentsCalendar from "../components/AppointmentsCalendar";
 import DayAppointmentsModal from "../components/DayAppointmentsModal";
 
@@ -83,14 +83,15 @@ function TableSkeleton() {
 }
 
 export default function Appointments() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const STATUS_OPTIONS = [
-    { value: "SCHEDULED", label: t("appointments.scheduled") },
+    { value: "SCHEDULED", label: t("appointments.planned") },
     { value: "CONFIRMED", label: t("appointments.confirmed") },
     { value: "CANCELLED", label: t("appointments.cancelled") },
     { value: "COMPLETED", label: t("appointments.completed") },
     { value: "NO_SHOW", label: t("appointments.noShow") },
+    { value: "RESCHEDULED", label: t("appointments.rescheduled") },
   ];
 
   const [loading, setLoading] = useState(true);
@@ -138,6 +139,16 @@ export default function Appointments() {
   // Edit state
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState(null);
+
+  // Cancel confirmation modal
+  const [cancelTarget, setCancelTarget] = useState(null);
+
+  // Reschedule modal
+  const [rescheduleTarget, setRescheduleTarget] = useState(null);
+  const [rescheduleDateTime, setRescheduleDateTime] = useState("");
+
+  // Inline status dropdown
+  const [statusDropdownId, setStatusDropdownId] = useState(null);
 
   const patientById = useMemo(() => {
     const map = new Map();
@@ -432,6 +443,91 @@ export default function Appointments() {
     }
   }
 
+  async function quickStatusChange(appt, newStatus) {
+    setStatusDropdownId(null);
+    if (newStatus === "CANCELLED") {
+      setCancelTarget(appt);
+      return;
+    }
+    if (newStatus === "RESCHEDULED") {
+      setRescheduleTarget(appt);
+      setRescheduleDateTime(appt.scheduled_at ? toLocalInputValue(new Date(appt.scheduled_at)) : "");
+      return;
+    }
+    setSaving(true);
+    setError("");
+    try {
+      await api.patch(`/api/appointments/${appt.id}/`, { status: newStatus });
+      setItems((prev) => prev.map((item) => item.id === appt.id ? { ...item, status: newStatus } : item));
+      setCalendarAppointments((prev) => prev.map((item) => item.id === appt.id ? { ...item, status: newStatus } : item));
+    } catch (e) {
+      const detail = e?.response?.data;
+      setError(detail ? JSON.stringify(detail, null, 2) : t("appointments.updateFailed"));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function confirmCancel() {
+    if (!cancelTarget) return;
+    setSaving(true);
+    setError("");
+    try {
+      await api.patch(`/api/appointments/${cancelTarget.id}/`, { status: "CANCELLED" });
+      setItems((prev) => prev.map((item) => item.id === cancelTarget.id ? { ...item, status: "CANCELLED" } : item));
+      setCalendarAppointments((prev) => prev.map((item) => item.id === cancelTarget.id ? { ...item, status: "CANCELLED" } : item));
+      setCancelTarget(null);
+    } catch (e) {
+      const detail = e?.response?.data;
+      setError(detail ? JSON.stringify(detail, null, 2) : t("appointments.updateFailed"));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function confirmReschedule() {
+    if (!rescheduleTarget || !rescheduleDateTime) return;
+    setSaving(true);
+    setError("");
+    try {
+      const newIso = new Date(rescheduleDateTime).toISOString();
+      await api.patch(`/api/appointments/${rescheduleTarget.id}/`, {
+        status: "RESCHEDULED",
+        scheduled_at: newIso,
+      });
+      setItems((prev) => prev.map((item) =>
+        item.id === rescheduleTarget.id ? { ...item, status: "RESCHEDULED", scheduled_at: newIso } : item
+      ));
+      setCalendarAppointments((prev) => prev.map((item) =>
+        item.id === rescheduleTarget.id ? { ...item, status: "RESCHEDULED", scheduled_at: newIso } : item
+      ));
+      setRescheduleTarget(null);
+      setRescheduleDateTime("");
+    } catch (e) {
+      const detail = e?.response?.data;
+      if (detail && typeof detail === "object") {
+        const messages = [];
+        for (const [field, errors] of Object.entries(detail)) {
+          const errorList = Array.isArray(errors) ? errors : [errors];
+          for (const err of errorList) {
+            if (field === "scheduled_at" && String(err).includes("past")) {
+              messages.push(t("appointments.cannotBeInPast"));
+            } else {
+              messages.push(`${field}: ${err}`);
+            }
+          }
+        }
+        setError(messages.join("\n") || t("appointments.updateFailed"));
+      } else {
+        setError(t("appointments.updateFailed"));
+      }
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const locale = i18n.language === "fr" ? "fr-FR" : "en-GB";
+
   function getPatientInfo(appt) {
     const pObj = appt.patient && typeof appt.patient === "object" ? appt.patient : null;
     if (pObj) {
@@ -471,23 +567,25 @@ export default function Appointments() {
       CANCELLED: { background: "rgba(239, 68, 68, 0.1)", color: "#ef4444" },
       COMPLETED: { background: "rgba(107, 114, 128, 0.1)", color: "#6b7280" },
       NO_SHOW: { background: "rgba(245, 158, 11, 0.1)", color: "#f59e0b" },
+      RESCHEDULED: { background: "rgba(249, 115, 22, 0.1)", color: "#f97316" },
     };
     return styles[status] || styles.SCHEDULED;
   }
 
   function getStatusLabel(status) {
     const labels = {
-      SCHEDULED: t("appointments.scheduled"),
+      SCHEDULED: t("appointments.planned"),
       CONFIRMED: t("appointments.confirmed"),
       CANCELLED: t("appointments.cancelled"),
       COMPLETED: t("appointments.completed"),
       NO_SHOW: t("appointments.noShow"),
+      RESCHEDULED: t("appointments.rescheduled"),
     };
     return labels[status] || status;
   }
 
   return (
-    <div className="cf-animate-in">
+    <div className="cf-animate-in" onClick={() => setStatusDropdownId(null)}>
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 16 }}>
         <div>
@@ -749,6 +847,116 @@ export default function Appointments() {
       )}
 
       {/* Appointments Table (List View) */}
+      {/* Cancel Confirmation Modal */}
+      {cancelTarget && (
+        <div
+          style={{
+            position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+            background: "rgba(0, 0, 0, 0.5)", display: "flex", alignItems: "center", justifyContent: "center",
+            zIndex: 1000, padding: 20,
+          }}
+          onClick={() => setCancelTarget(null)}
+        >
+          <div
+            className="cf-modal-content"
+            style={{
+              background: "var(--card)", padding: 24, borderRadius: 16,
+              maxWidth: 420, width: "100%", boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 style={{ margin: "0 0 12px 0" }}>{t("appointments.cancelConfirmTitle")}</h3>
+            <p style={{ color: "var(--muted)", margin: "0 0 20px 0", fontSize: "0.875rem" }}>
+              {t("appointments.cancelConfirmMessage")}
+            </p>
+            <div className="cf-btn-row" style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>
+              <button
+                onClick={() => setCancelTarget(null)}
+                disabled={saving}
+                style={{
+                  padding: "10px 20px", borderRadius: 8, border: "1px solid var(--border)",
+                  background: "var(--card)", color: "var(--text)", cursor: "pointer",
+                  fontWeight: 500, fontSize: "0.875rem",
+                }}
+              >
+                {t("common.back")}
+              </button>
+              <button
+                onClick={confirmCancel}
+                disabled={saving}
+                style={{
+                  padding: "10px 20px", borderRadius: 8, border: "none",
+                  background: "#ef4444", color: "white", cursor: saving ? "not-allowed" : "pointer",
+                  fontWeight: 600, fontSize: "0.875rem", opacity: saving ? 0.7 : 1,
+                }}
+              >
+                {saving ? t("common.saving") : t("appointments.cancelConfirmButton")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reschedule Modal */}
+      {rescheduleTarget && (
+        <div
+          style={{
+            position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+            background: "rgba(0, 0, 0, 0.5)", display: "flex", alignItems: "center", justifyContent: "center",
+            zIndex: 1000, padding: 20,
+          }}
+          onClick={() => { setRescheduleTarget(null); setRescheduleDateTime(""); }}
+        >
+          <div
+            className="cf-modal-content"
+            style={{
+              background: "var(--card)", padding: 24, borderRadius: 16,
+              maxWidth: 420, width: "100%", boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 style={{ margin: "0 0 8px 0" }}>{t("appointments.rescheduleTitle")}</h3>
+            <p style={{ color: "var(--muted)", margin: "0 0 20px 0", fontSize: "0.875rem" }}>
+              {t("appointments.rescheduleMessage")}
+            </p>
+            <div style={{ marginBottom: 20 }}>
+              <label style={labelStyle}>{t("appointments.newDateTime")} *</label>
+              <input
+                type="datetime-local"
+                value={rescheduleDateTime}
+                onChange={(e) => setRescheduleDateTime(e.target.value)}
+                style={{ width: "100%" }}
+              />
+            </div>
+            <div className="cf-btn-row" style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>
+              <button
+                onClick={() => { setRescheduleTarget(null); setRescheduleDateTime(""); }}
+                disabled={saving}
+                style={{
+                  padding: "10px 20px", borderRadius: 8, border: "1px solid var(--border)",
+                  background: "var(--card)", color: "var(--text)", cursor: "pointer",
+                  fontWeight: 500, fontSize: "0.875rem",
+                }}
+              >
+                {t("common.cancel")}
+              </button>
+              <button
+                onClick={confirmReschedule}
+                disabled={saving || !rescheduleDateTime}
+                style={{
+                  padding: "10px 20px", borderRadius: 8, border: "none",
+                  background: "#f97316", color: "white",
+                  cursor: (saving || !rescheduleDateTime) ? "not-allowed" : "pointer",
+                  fontWeight: 600, fontSize: "0.875rem", opacity: (saving || !rescheduleDateTime) ? 0.7 : 1,
+                }}
+              >
+                {saving ? t("common.saving") : t("appointments.rescheduleButton")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {viewMode === "list" && (
       <div style={{ border: "1px solid var(--border)", borderRadius: 16, background: "var(--card)", overflow: "hidden" }}>
         {loading ? (
@@ -895,16 +1103,57 @@ export default function Appointments() {
                         </div>
                       </td>
                       <td style={tdStyle}>
-                        {formatDateTime(a.scheduled_at)}
+                        {formatDateTimeLong(a.scheduled_at, locale)}
                       </td>
-                      <td style={tdStyle}>
-                        <span style={{
-                          display: "inline-flex", alignItems: "center", padding: "4px 10px", borderRadius: 9999,
-                          fontSize: "0.75rem", fontWeight: 600,
-                          ...getStatusStyle(a.status),
-                        }}>
-                          {getStatusLabel(a.status)}
-                        </span>
+                      <td style={{ ...tdStyle, position: "relative" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <span style={{
+                            display: "inline-flex", alignItems: "center", padding: "4px 10px", borderRadius: 9999,
+                            fontSize: "0.75rem", fontWeight: 600,
+                            ...getStatusStyle(a.status),
+                          }}>
+                            {getStatusLabel(a.status)}
+                          </span>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setStatusDropdownId(statusDropdownId === a.id ? null : a.id); }}
+                            title={t("appointments.changeStatus")}
+                            style={{
+                              padding: "2px 6px", borderRadius: 4, border: "1px solid var(--border)",
+                              background: "var(--card)", color: "var(--muted)", cursor: "pointer",
+                              fontSize: "0.6875rem", lineHeight: 1, display: "inline-flex", alignItems: "center",
+                            }}
+                          >
+                            ▼
+                          </button>
+                        </div>
+                        {statusDropdownId === a.id && (
+                          <div style={{
+                            position: "absolute", top: "100%", left: 16, zIndex: 50,
+                            background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8,
+                            boxShadow: "0 8px 24px rgba(0,0,0,0.15)", minWidth: 160, overflow: "hidden",
+                          }}>
+                            {STATUS_OPTIONS.filter((s) => s.value !== a.status).map((s) => (
+                              <button
+                                key={s.value}
+                                onClick={() => quickStatusChange(a, s.value)}
+                                style={{
+                                  display: "flex", alignItems: "center", gap: 8, width: "100%",
+                                  padding: "8px 12px", border: "none", background: "transparent",
+                                  color: "var(--text)", cursor: "pointer", fontSize: "0.8125rem",
+                                  textAlign: "left", transition: "background 100ms ease",
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.background = "var(--surface)"}
+                                onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                              >
+                                <span style={{
+                                  width: 8, height: 8, borderRadius: "50%",
+                                  background: getStatusStyle(s.value).color,
+                                }} />
+                                {s.label}
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </td>
                       <td style={{ ...tdStyle, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis" }}>
                         {a.reason || "-"}

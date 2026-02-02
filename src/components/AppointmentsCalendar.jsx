@@ -23,6 +23,7 @@ function getStatusStyle(status) {
     CANCELLED: { background: "rgba(239, 68, 68, 0.15)", color: "#ef4444", borderColor: "#ef4444" },
     COMPLETED: { background: "rgba(107, 114, 128, 0.15)", color: "#6b7280", borderColor: "#6b7280" },
     NO_SHOW: { background: "rgba(245, 158, 11, 0.15)", color: "#f59e0b", borderColor: "#f59e0b" },
+    RESCHEDULED: { background: "rgba(249, 115, 22, 0.15)", color: "#f97316", borderColor: "#f97316" },
   };
   return styles[status] || styles.SCHEDULED;
 }

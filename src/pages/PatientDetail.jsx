@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { getPatient, updatePatient, archivePatient, restorePatient } from "../api/patients";
 import { api } from "../api/client";
 import { getProfile } from "../api/profile";
-import { formatDate, formatTime, formatDateTime } from "../utils/dateFormat";
+import { formatDate, formatTime, formatDateTime, formatDateLong } from "../utils/dateFormat";
 import PatientFiles from "../components/PatientFiles";
 import PatientPrescriptions from "../components/PatientPrescriptions";
 
@@ -93,9 +93,12 @@ export default function PatientDetail() {
   const { t } = useTranslation();
 
   const [patient, setPatient] = useState(null);
+  const { i18n } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [appointments, setAppointments] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
+
+  const locale = i18n.language === "fr" ? "fr-FR" : "en-GB";
 
   // edit state
   const [editing, setEditing] = useState(false);
@@ -546,30 +549,48 @@ export default function PatientDetail() {
               </p>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {appointments.map((appt) => (
-                  <div key={appt.id} style={{
-                    padding: 12, borderRadius: 8, background: "var(--surface)",
-                    display: "flex", justifyContent: "space-between", alignItems: "center",
-                  }}>
-                    <div>
-                      <div style={{ fontWeight: 500 }}>
-                        {formatDate(appt.scheduled_at)}
-                      </div>
-                      <div style={{ fontSize: "0.8125rem", color: "var(--muted)" }}>
-                        {formatTime(appt.scheduled_at)}
-                        {appt.reason && ` - ${appt.reason}`}
-                      </div>
-                    </div>
-                    <span style={{
-                      display: "inline-flex", alignItems: "center", padding: "4px 10px", borderRadius: 9999,
-                      fontSize: "0.75rem", fontWeight: 600,
-                      background: appt.status === "CONFIRMED" ? "rgba(34, 197, 94, 0.1)" : "rgba(59, 130, 246, 0.1)",
-                      color: appt.status === "CONFIRMED" ? "#22c55e" : "#3b82f6",
+                {appointments.map((appt) => {
+                  const statusStyles = {
+                    SCHEDULED: { background: "rgba(59, 130, 246, 0.1)", color: "#3b82f6" },
+                    CONFIRMED: { background: "rgba(34, 197, 94, 0.1)", color: "#22c55e" },
+                    CANCELLED: { background: "rgba(239, 68, 68, 0.1)", color: "#ef4444" },
+                    COMPLETED: { background: "rgba(107, 114, 128, 0.1)", color: "#6b7280" },
+                    NO_SHOW: { background: "rgba(245, 158, 11, 0.1)", color: "#f59e0b" },
+                    RESCHEDULED: { background: "rgba(249, 115, 22, 0.1)", color: "#f97316" },
+                  };
+                  const statusLabels = {
+                    SCHEDULED: t("appointments.planned"),
+                    CONFIRMED: t("appointments.confirmed"),
+                    CANCELLED: t("appointments.cancelled"),
+                    COMPLETED: t("appointments.completed"),
+                    NO_SHOW: t("appointments.noShow"),
+                    RESCHEDULED: t("appointments.rescheduled"),
+                  };
+                  const sStyle = statusStyles[appt.status] || statusStyles.SCHEDULED;
+                  return (
+                    <div key={appt.id} style={{
+                      padding: 12, borderRadius: 8, background: "var(--surface)",
+                      display: "flex", justifyContent: "space-between", alignItems: "center",
                     }}>
-                      {appt.status === "CONFIRMED" ? t("appointments.confirmed") : t("appointments.scheduled")}
-                    </span>
-                  </div>
-                ))}
+                      <div>
+                        <div style={{ fontWeight: 500 }}>
+                          {formatDateLong(appt.scheduled_at, locale)}
+                        </div>
+                        <div style={{ fontSize: "0.8125rem", color: "var(--muted)" }}>
+                          {formatTime(appt.scheduled_at)}
+                          {appt.reason && ` - ${appt.reason}`}
+                        </div>
+                      </div>
+                      <span style={{
+                        display: "inline-flex", alignItems: "center", padding: "4px 10px", borderRadius: 9999,
+                        fontSize: "0.75rem", fontWeight: 600,
+                        ...sStyle,
+                      }}>
+                        {statusLabels[appt.status] || appt.status}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

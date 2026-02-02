@@ -394,7 +394,20 @@
     "reminderOn": "Reminder: On",
     "reminderOff": "Reminder: Off",
     "reminderToggleFailed": "Failed to toggle reminder. Please try again.",
-    "reminderSentAt": "SMS sent on"
+    "reminderSentAt": "SMS sent on",
+    "rescheduled": "Rescheduled",
+    "planned": "Planned",
+    "cancelConfirmTitle": "Cancel Appointment?",
+    "cancelConfirmMessage": "Are you sure you want to cancel this appointment? This action can be reversed by changing the status later.",
+    "cancelConfirmButton": "Yes, cancel appointment",
+    "rescheduleTitle": "Reschedule Appointment",
+    "rescheduleMessage": "Choose a new date and time for this appointment.",
+    "newDateTime": "New date and time",
+    "rescheduleButton": "Reschedule",
+    "rescheduleSuccess": "Appointment rescheduled successfully.",
+    "cancelSuccess": "Appointment cancelled successfully.",
+    "statusChangeSuccess": "Status updated successfully.",
+    "changeStatus": "Change status"
   },
   "language": {
     "select": "Language",

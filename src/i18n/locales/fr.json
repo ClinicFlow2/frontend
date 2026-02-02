@@ -394,7 +394,20 @@
     "reminderOn": "Rappel : Activé",
     "reminderOff": "Rappel : Désactivé",
     "reminderToggleFailed": "Impossible de modifier le rappel. Veuillez réessayer.",
-    "reminderSentAt": "SMS envoyé le"
+    "reminderSentAt": "SMS envoyé le",
+    "rescheduled": "Reprogrammé",
+    "planned": "Planifié",
+    "cancelConfirmTitle": "Annuler le rendez-vous ?",
+    "cancelConfirmMessage": "Êtes-vous sûr de vouloir annuler ce rendez-vous ? Vous pourrez modifier le statut ultérieurement.",
+    "cancelConfirmButton": "Oui, annuler le rendez-vous",
+    "rescheduleTitle": "Reprogrammer le rendez-vous",
+    "rescheduleMessage": "Choisissez une nouvelle date et heure pour ce rendez-vous.",
+    "newDateTime": "Nouvelle date et heure",
+    "rescheduleButton": "Reprogrammer",
+    "rescheduleSuccess": "Rendez-vous reprogrammé avec succès.",
+    "cancelSuccess": "Rendez-vous annulé avec succès.",
+    "statusChangeSuccess": "Statut mis à jour avec succès.",
+    "changeStatus": "Changer le statut"
   },
   "language": {
     "select": "Langue",

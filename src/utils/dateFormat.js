@@ -65,3 +65,24 @@ export function formatDateLong(date, locale = "en-GB") {
     year: "numeric",
   });
 }
+
+/**
+ * Format a date and time with full month name (e.g., "3 February 2026, 14:30")
+ * Locale-aware: uses "fr-FR" or "en-GB" depending on the locale parameter.
+ * @param {Date|string|number} date - The date/time to format
+ * @param {string} locale - Locale string (default: "en-GB")
+ * @returns {string} Formatted datetime string or "-" if invalid
+ */
+export function formatDateTimeLong(date, locale = "en-GB") {
+  if (!date) return "-";
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return "-";
+
+  return d.toLocaleDateString(locale, {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}

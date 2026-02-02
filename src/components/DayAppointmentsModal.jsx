@@ -27,6 +27,7 @@ function getStatusStyle(status) {
     CANCELLED: { background: "rgba(239, 68, 68, 0.1)", color: "#ef4444" },
     COMPLETED: { background: "rgba(107, 114, 128, 0.1)", color: "#6b7280" },
     NO_SHOW: { background: "rgba(245, 158, 11, 0.1)", color: "#f59e0b" },
+    RESCHEDULED: { background: "rgba(249, 115, 22, 0.1)", color: "#f97316" },
   };
   return styles[status] || styles.SCHEDULED;
 }
@@ -80,11 +81,12 @@ export default function DayAppointmentsModal({
 
   function getStatusLabel(status) {
     const labels = {
-      SCHEDULED: t("appointments.scheduled"),
+      SCHEDULED: t("appointments.planned"),
       CONFIRMED: t("appointments.confirmed"),
       CANCELLED: t("appointments.cancelled"),
       COMPLETED: t("appointments.completed"),
       NO_SHOW: t("appointments.noShow"),
+      RESCHEDULED: t("appointments.rescheduled"),
     };
     return labels[status] || status;
   }
