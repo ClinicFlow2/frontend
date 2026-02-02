@@ -116,6 +116,15 @@ export default function Patients() {
   }, []);
   useEffect(() => { loadPatients(1, query, pageSize, showArchived); }, [pageSize, showArchived]);
 
+  // Debounce search: auto-search after 400ms of typing
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      loadPatients(1, query, pageSize, showArchived);
+    }, 400);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query]);
+
   const handleCreate = async (e) => {
     e.preventDefault();
     setSubmitting(true);

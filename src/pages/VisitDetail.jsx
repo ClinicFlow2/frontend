@@ -347,9 +347,10 @@ export default function VisitDetail() {
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div className="cf-skeleton" style={{ height: 32, width: 200 }} />
           <div className="cf-skeleton" style={{ height: 20, width: 300 }} />
-          <div className="cf-main-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+          <div style={{ display: "grid", gap: 14, maxWidth: 1100 }}>
             <div className="cf-skeleton" style={{ height: 300, borderRadius: 16 }} />
-            <div className="cf-skeleton" style={{ height: 300, borderRadius: 16 }} />
+            <div className="cf-skeleton" style={{ height: 200, borderRadius: 16 }} />
+            <div className="cf-skeleton" style={{ height: 200, borderRadius: 16 }} />
           </div>
         </div>
       </div>
@@ -408,408 +409,404 @@ export default function VisitDetail() {
         </div>
       </div>
 
-      {/* Main grid */}
+      {/* Main content — single-column clinical workflow */}
       <div
-        className="cf-main-grid"
         style={{
           marginTop: 14,
           display: "grid",
-          gridTemplateColumns: "1.1fr 0.9fr",
           gap: 14,
           maxWidth: 1100,
           marginLeft: "auto",
           marginRight: "auto",
-          alignItems: "start",
         }}
       >
-        {/* Left column */}
-        <div style={{ display: "grid", gap: 14 }}>
-          {/* Visit details */}
-          <Card
-            title={t("visitDetail.visitDetails")}
-            right={
-              !editMode ? (
-                <button onClick={() => setEditMode(true)} style={btn}>
-                  {t("common.edit")}
+        {/* ── Visit Details (edit mode) or Visit Information (view mode) ── */}
+        <Card
+          title={editMode ? t("visitDetail.visitDetails") : t("visitDetail.visitInformation")}
+          right={
+            !editMode ? (
+              <button onClick={() => setEditMode(true)} style={btn}>
+                {t("common.edit")}
+              </button>
+            ) : null
+          }
+        >
+          {editMode ? (
+            <form onSubmit={handleUpdateVisit}>
+              <div style={{ display: "grid", gap: 12 }}>
+                <div>
+                  <label style={label}>{t("patientVisits.visitType")}</label>
+                  <select
+                    value={editForm.visit_type}
+                    onChange={(e) => setEditForm((f) => ({ ...f, visit_type: e.target.value }))}
+                    style={input}
+                  >
+                    <option value="CONSULTATION">{t("patientVisits.consultation")}</option>
+                    <option value="FOLLOW_UP">{t("patientVisits.followUp")}</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={label}>{t("visits.chiefComplaint")}</label>
+                  <input
+                    value={editForm.chief_complaint}
+                    onChange={(e) => setEditForm((f) => ({ ...f, chief_complaint: e.target.value }))}
+                    style={input}
+                  />
+                </div>
+
+                <div>
+                  <label style={label}>{t("patientVisits.medicalHistory")}</label>
+                  <textarea
+                    value={editForm.medical_history}
+                    onChange={(e) => setEditForm((f) => ({ ...f, medical_history: e.target.value }))}
+                    style={textarea}
+                    rows={4}
+                  />
+                </div>
+
+                <div>
+                  <label style={label}>{t("patientVisits.historyOfPresentIllness")}</label>
+                  <textarea
+                    value={editForm.history_of_present_illness}
+                    onChange={(e) => setEditForm((f) => ({ ...f, history_of_present_illness: e.target.value }))}
+                    style={textarea}
+                    rows={4}
+                  />
+                </div>
+
+                <div>
+                  <label style={label}>{t("patientVisits.physicalExam")}</label>
+                  <textarea
+                    value={editForm.physical_exam}
+                    onChange={(e) => setEditForm((f) => ({ ...f, physical_exam: e.target.value }))}
+                    style={textarea}
+                    rows={4}
+                  />
+                </div>
+
+                <div>
+                  <label style={label}>{t("patientVisits.complementaryExam")}</label>
+                  <textarea
+                    value={editForm.complementary_exam}
+                    onChange={(e) => setEditForm((f) => ({ ...f, complementary_exam: e.target.value }))}
+                    style={textarea}
+                    rows={4}
+                  />
+                </div>
+
+                <div>
+                  <label style={label}>{t("patientVisits.assessment")}</label>
+                  <textarea
+                    value={editForm.assessment}
+                    onChange={(e) => setEditForm((f) => ({ ...f, assessment: e.target.value }))}
+                    style={textarea}
+                    rows={4}
+                  />
+                </div>
+
+                <div>
+                  <label style={label}>{t("patientVisits.plan")}</label>
+                  <textarea
+                    value={editForm.plan}
+                    onChange={(e) => setEditForm((f) => ({ ...f, plan: e.target.value }))}
+                    style={textarea}
+                    rows={4}
+                  />
+                </div>
+
+                <div>
+                  <label style={label}>{t("patientVisits.treatment")}</label>
+                  <textarea
+                    value={editForm.treatment}
+                    onChange={(e) => setEditForm((f) => ({ ...f, treatment: e.target.value }))}
+                    style={textarea}
+                    rows={4}
+                  />
+                </div>
+
+                <div>
+                  <label style={label}>{t("visits.notes")}</label>
+                  <textarea
+                    value={editForm.notes}
+                    onChange={(e) => setEditForm((f) => ({ ...f, notes: e.target.value }))}
+                    style={textarea}
+                    rows={3}
+                  />
+                </div>
+              </div>
+
+              <div style={{ marginTop: 12, display: "flex", gap: 10 }}>
+                <button type="submit" disabled={saving} style={{ ...btnPrimary, flex: 1 }}>
+                  {saving ? t("common.saving") : t("common.save")}
                 </button>
-              ) : null
-            }
-          >
-            {editMode ? (
-              <form onSubmit={handleUpdateVisit}>
-                <div style={{ display: "grid", gap: 12 }}>
-                  <div>
-                    <label style={label}>{t("patientVisits.visitType")}</label>
-                    <select
-                      value={editForm.visit_type}
-                      onChange={(e) => setEditForm((f) => ({ ...f, visit_type: e.target.value }))}
-                      style={input}
-                    >
-                      <option value="CONSULTATION">{t("patientVisits.consultation")}</option>
-                      <option value="FOLLOW_UP">{t("patientVisits.followUp")}</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label style={label}>{t("visits.chiefComplaint")}</label>
-                    <input
-                      value={editForm.chief_complaint}
-                      onChange={(e) => setEditForm((f) => ({ ...f, chief_complaint: e.target.value }))}
-                      style={input}
-                    />
-                  </div>
-
-                  <div>
-                    <label style={label}>{t("patientVisits.medicalHistory")}</label>
-                    <textarea
-                      value={editForm.medical_history}
-                      onChange={(e) => setEditForm((f) => ({ ...f, medical_history: e.target.value }))}
-                      style={textarea}
-                      rows={4}
-                    />
-                  </div>
-
-                  <div>
-                    <label style={label}>{t("patientVisits.historyOfPresentIllness")}</label>
-                    <textarea
-                      value={editForm.history_of_present_illness}
-                      onChange={(e) => setEditForm((f) => ({ ...f, history_of_present_illness: e.target.value }))}
-                      style={textarea}
-                      rows={4}
-                    />
-                  </div>
-
-                  <div>
-                    <label style={label}>{t("patientVisits.physicalExam")}</label>
-                    <textarea
-                      value={editForm.physical_exam}
-                      onChange={(e) => setEditForm((f) => ({ ...f, physical_exam: e.target.value }))}
-                      style={textarea}
-                      rows={4}
-                    />
-                  </div>
-
-                  <div>
-                    <label style={label}>{t("patientVisits.complementaryExam")}</label>
-                    <textarea
-                      value={editForm.complementary_exam}
-                      onChange={(e) => setEditForm((f) => ({ ...f, complementary_exam: e.target.value }))}
-                      style={textarea}
-                      rows={4}
-                    />
-                  </div>
-
-                  <div>
-                    <label style={label}>{t("patientVisits.assessment")}</label>
-                    <textarea
-                      value={editForm.assessment}
-                      onChange={(e) => setEditForm((f) => ({ ...f, assessment: e.target.value }))}
-                      style={textarea}
-                      rows={4}
-                    />
-                  </div>
-
-                  <div>
-                    <label style={label}>{t("patientVisits.plan")}</label>
-                    <textarea
-                      value={editForm.plan}
-                      onChange={(e) => setEditForm((f) => ({ ...f, plan: e.target.value }))}
-                      style={textarea}
-                      rows={4}
-                    />
-                  </div>
-
-                  <div>
-                    <label style={label}>{t("patientVisits.treatment")}</label>
-                    <textarea
-                      value={editForm.treatment}
-                      onChange={(e) => setEditForm((f) => ({ ...f, treatment: e.target.value }))}
-                      style={textarea}
-                      rows={4}
-                    />
-                  </div>
-
-                  <div>
-                    <label style={label}>{t("visits.notes")}</label>
-                    <textarea
-                      value={editForm.notes}
-                      onChange={(e) => setEditForm((f) => ({ ...f, notes: e.target.value }))}
-                      style={textarea}
-                      rows={3}
-                    />
-                  </div>
-                </div>
-
-                <div style={{ marginTop: 12, display: "flex", gap: 10 }}>
-                  <button type="submit" disabled={saving} style={{ ...btnPrimary, flex: 1 }}>
-                    {saving ? t("common.saving") : t("common.save")}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditMode(false);
-                      // Reset form to original visit data
-                      setEditForm({
-                        visit_type: visit.visit_type || "CONSULTATION",
-                        chief_complaint: visit.chief_complaint || "",
-                        medical_history: visit.medical_history || "",
-                        history_of_present_illness: visit.history_of_present_illness || "",
-                        physical_exam: visit.physical_exam || "",
-                        complementary_exam: visit.complementary_exam || "",
-                        assessment: visit.assessment || "",
-                        plan: visit.plan || "",
-                        treatment: visit.treatment || "",
-                        notes: visit.notes || "",
-                      });
-                    }}
-                    style={btn}
-                  >
-                    {t("common.cancel")}
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <>
-                <div className="cf-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                  <div>
-                    <div style={kv}><b>{t("patientVisits.type")}:</b> {formatVisitType(visit.visit_type, t)}</div>
-                    <div style={kv}><b>{t("visits.chiefComplaint")}:</b> {visit.chief_complaint || "-"}</div>
-                  </div>
-
-                  <div>
-                    <b>{t("patientVisits.medicalHistory")}:</b>
-                    <div style={box}>{visit.medical_history || "-"}</div>
-                  </div>
-                </div>
-
-                <div className="cf-form-grid" style={{ marginTop: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                  <div>
-                    <b>{t("visitDetail.hpi")}:</b>
-                    <div style={box}>{visit.history_of_present_illness || "-"}</div>
-                  </div>
-                  <div>
-                    <b>{t("patientVisits.physicalExam")}:</b>
-                    <div style={box}>{visit.physical_exam || "-"}</div>
-                  </div>
-                </div>
-
-                <div className="cf-form-grid" style={{ marginTop: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                  <div>
-                    <b>{t("patientVisits.complementaryExam")}:</b>
-                    <div style={box}>{visit.complementary_exam || "-"}</div>
-                  </div>
-                  <div>
-                    <b>{t("patientVisits.assessment")}:</b>
-                    <div style={box}>{visit.assessment || "-"}</div>
-                  </div>
-                </div>
-
-                <div className="cf-form-grid" style={{ marginTop: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                  <div>
-                    <b>{t("patientVisits.plan")}:</b>
-                    <div style={box}>{visit.plan || "-"}</div>
-                  </div>
-                  <div>
-                    <b>{t("patientVisits.treatment")}:</b>
-                    <div style={box}>{visit.treatment || "-"}</div>
-                  </div>
-                </div>
-
-                <div style={{ marginTop: 10 }}>
-                  <b>{t("visits.notes")}:</b>
-                  <div style={box}>{visit.notes || "-"}</div>
-                </div>
-              </>
-            )}
-          </Card>
-
-          {/* Prescriptions */}
-          <Card
-            title={t("prescriptions.title")}
-            right={
-              <button onClick={loadPrescriptions} style={btn} disabled={rxLoading}>
-                {rxLoading ? t("common.loading") : t("common.refresh")}
-              </button>
-            }
-            subtitle={t("visitDetail.prescriptionCount", { count: prescriptions.length })}
-          >
-            {rxError ? <p style={{ color: "#ff6b6b", marginTop: 10 }}>{rxError}</p> : null}
-
-            {!rxLoading && prescriptions.length === 0 ? (
-              <p style={{ color: "var(--muted)", marginTop: 10 }}>{t("visitDetail.noPrescriptions")}</p>
-            ) : null}
-
-            {prescriptions.length > 0 ? (
-              <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
-                {prescriptions.map((rx) => (
-                  <div
-                    key={rx.id}
-                    style={{
-                      padding: 12,
-                      border: "1px solid var(--border)",
-                      borderRadius: 14,
-                      background: "var(--surface)",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      gap: 10,
-                      alignItems: "center",
-                      color: "var(--text)",
-                    }}
-                  >
-                    <div>
-                      <b>{t("visitDetail.prescriptionNumber", { id: rx.id })}</b>
-                      <div style={{ color: "var(--muted)", fontSize: 12, marginTop: 4 }}>
-                        {t("visitDetail.created")}: {formatDateTime(rx.created_at)}
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => handleDownloadPdf(rx.id)}
-                      disabled={rxDownloadingId === rx.id}
-                      style={{ ...btnPrimary, whiteSpace: "nowrap" }}
-                      title={t("visitDetail.downloadPdf")}
-                    >
-                      {rxDownloadingId === rx.id ? t("visitDetail.downloading") : "PDF"}
-                    </button>
-                  </div>
-                ))}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditMode(false);
+                    // Reset form to original visit data
+                    setEditForm({
+                      visit_type: visit.visit_type || "CONSULTATION",
+                      chief_complaint: visit.chief_complaint || "",
+                      medical_history: visit.medical_history || "",
+                      history_of_present_illness: visit.history_of_present_illness || "",
+                      physical_exam: visit.physical_exam || "",
+                      complementary_exam: visit.complementary_exam || "",
+                      assessment: visit.assessment || "",
+                      plan: visit.plan || "",
+                      treatment: visit.treatment || "",
+                      notes: visit.notes || "",
+                    });
+                  }}
+                  style={btn}
+                >
+                  {t("common.cancel")}
+                </button>
               </div>
-            ) : null}
-          </Card>
-        </div>
+            </form>
+          ) : (
+            <>
+              <div className="cf-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div>
+                  <div style={kv}><b>{t("patientVisits.type")}:</b> {formatVisitType(visit.visit_type, t)}</div>
+                  <div style={kv}><b>{t("visits.chiefComplaint")}:</b> {visit.chief_complaint || "-"}</div>
+                </div>
 
-        {/* Right column */}
-        <div style={{ display: "grid", gap: 14 }}>
-          {/* Vital signs summary */}
-          <Card
-            title={t("visits.vitals")}
-            subtitle={latestVitals?.measured_at ? `${t("visitDetail.latest")}: ${formatDateTime(latestVitals.measured_at)}` : t("visitDetail.noVitalsRecorded")}
-            right={
-              <button onClick={() => setShowVitalsForm((s) => !s)} style={btn}>
-                {showVitalsForm ? t("common.close") : t("visitDetail.addVitals")}
-              </button>
-            }
-          >
-            {!latestVitals ? (
-              <div style={{ color: "var(--muted)" }}>{t("visitDetail.noVitalsYet")}</div>
-            ) : (
-              <div style={{ display: "grid", gap: 10, marginTop: 6 }}>
-                <VitalsRow label={t("visits.temperature")} value={latestVitals.temperature_c != null ? `${latestVitals.temperature_c} °C` : "-"} />
-                <VitalsRow
-                  label={t("visits.bloodPressure")}
-                  value={
-                    latestVitals.bp_systolic != null && latestVitals.bp_diastolic != null
-                      ? `${latestVitals.bp_systolic}/${latestVitals.bp_diastolic}`
-                      : "-"
-                  }
-                />
-                <VitalsRow label={t("visits.heartRate")} value={latestVitals.heart_rate_bpm != null ? `${latestVitals.heart_rate_bpm} bpm` : "-"} />
-                <VitalsRow label={t("visitDetail.respRate")} value={latestVitals.respiratory_rate_rpm != null ? `${latestVitals.respiratory_rate_rpm} rpm` : "-"} />
-                <VitalsRow label="SpO2" value={latestVitals.oxygen_saturation_pct != null ? `${latestVitals.oxygen_saturation_pct}%` : "-"} />
-                <VitalsRow label={t("visits.weight")} value={latestVitals.weight_kg != null ? `${latestVitals.weight_kg} kg` : "-"} />
-                <VitalsRow label={t("visits.height")} value={latestVitals.height_cm != null ? `${latestVitals.height_cm} cm` : "-"} />
-                <VitalsRow
-                  label={t("visitDetail.headCircumference")}
-                  value={latestVitals.head_circumference_cm != null ? `${latestVitals.head_circumference_cm} cm` : "-"}
-                />
+                <div>
+                  <b>{t("patientVisits.medicalHistory")}:</b>
+                  <div style={box}>{visit.medical_history || "-"}</div>
+                </div>
               </div>
-            )}
 
-            {showVitalsForm ? (
-              <form onSubmit={handleCreateVitals} style={{ marginTop: 14, borderTop: "1px solid var(--border)", paddingTop: 14 }}>
+              <div style={{ marginTop: 10 }}>
+                <b>{t("visitDetail.hpi")}:</b>
+                <div style={box}>{visit.history_of_present_illness || "-"}</div>
+              </div>
+            </>
+          )}
+        </Card>
+
+        {/* ── Vital Parameters — between HPI and Physical Exam ── */}
+        <Card
+          title={t("visits.vitals")}
+          subtitle={latestVitals?.measured_at ? `${t("visitDetail.latest")}: ${formatDateTime(latestVitals.measured_at)}` : t("visitDetail.noVitalsRecorded")}
+          right={
+            <button onClick={() => setShowVitalsForm((s) => !s)} style={btn}>
+              {showVitalsForm ? t("common.close") : t("visitDetail.addVitals")}
+            </button>
+          }
+        >
+          {!latestVitals ? (
+            <div style={{ color: "var(--muted)" }}>{t("visitDetail.noVitalsYet")}</div>
+          ) : (
+            <div className="cf-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 6 }}>
+              <VitalsRow label={t("visits.temperature")} value={latestVitals.temperature_c != null ? `${latestVitals.temperature_c} °C` : "-"} />
+              <VitalsRow
+                label={t("visits.bloodPressure")}
+                value={
+                  latestVitals.bp_systolic != null && latestVitals.bp_diastolic != null
+                    ? `${latestVitals.bp_systolic}/${latestVitals.bp_diastolic}`
+                    : "-"
+                }
+              />
+              <VitalsRow label={t("visits.heartRate")} value={latestVitals.heart_rate_bpm != null ? `${latestVitals.heart_rate_bpm} bpm` : "-"} />
+              <VitalsRow label={t("visitDetail.respRate")} value={latestVitals.respiratory_rate_rpm != null ? `${latestVitals.respiratory_rate_rpm} rpm` : "-"} />
+              <VitalsRow label="SpO2" value={latestVitals.oxygen_saturation_pct != null ? `${latestVitals.oxygen_saturation_pct}%` : "-"} />
+              <VitalsRow label={t("visits.weight")} value={latestVitals.weight_kg != null ? `${latestVitals.weight_kg} kg` : "-"} />
+              <VitalsRow label={t("visits.height")} value={latestVitals.height_cm != null ? `${latestVitals.height_cm} cm` : "-"} />
+              <VitalsRow
+                label={t("visitDetail.headCircumference")}
+                value={latestVitals.head_circumference_cm != null ? `${latestVitals.head_circumference_cm} cm` : "-"}
+              />
+            </div>
+          )}
+
+          {showVitalsForm ? (
+            <form onSubmit={handleCreateVitals} style={{ marginTop: 14, borderTop: "1px solid var(--border)", paddingTop: 14 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 10 }}>
+                <div>
+                  <label style={label}>{t("visitDetail.measuredAt")}</label>
+                  <input
+                    type="datetime-local"
+                    value={form.measured_at}
+                    onChange={(e) => setForm((f) => ({ ...f, measured_at: e.target.value }))}
+                    style={input}
+                  />
+                </div>
+
+                <div className="cf-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  <Field labelText={t("visitDetail.temperatureC")} value={form.temperature_c} onChange={(v) => setForm((f) => ({ ...f, temperature_c: v }))} placeholder="38.5" />
+                  <Field labelText={t("visitDetail.oxygenSat")} value={form.oxygen_saturation_pct} onChange={(v) => setForm((f) => ({ ...f, oxygen_saturation_pct: v }))} placeholder="98" />
+                </div>
+
+                <div className="cf-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  <Field labelText={t("visitDetail.weightKg")} value={form.weight_kg} onChange={(v) => setForm((f) => ({ ...f, weight_kg: v }))} placeholder="70" />
+                  <Field labelText={t("visitDetail.heightCm")} value={form.height_cm} onChange={(v) => setForm((f) => ({ ...f, height_cm: v }))} placeholder="175" />
+                </div>
+
+                <div className="cf-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  <Field labelText={t("visitDetail.bpSystolic")} value={form.bp_systolic} onChange={(v) => setForm((f) => ({ ...f, bp_systolic: v }))} placeholder="120" />
+                  <Field labelText={t("visitDetail.bpDiastolic")} value={form.bp_diastolic} onChange={(v) => setForm((f) => ({ ...f, bp_diastolic: v }))} placeholder="80" />
+                </div>
+
+                <div className="cf-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  <Field labelText={t("visitDetail.heartRateBpm")} value={form.heart_rate_bpm} onChange={(v) => setForm((f) => ({ ...f, heart_rate_bpm: v }))} placeholder="85" />
+                  <Field labelText={t("visitDetail.respRateRpm")} value={form.respiratory_rate_rpm} onChange={(v) => setForm((f) => ({ ...f, respiratory_rate_rpm: v }))} placeholder="18" />
+                </div>
+
                 <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 10 }}>
-                  <div>
-                    <label style={label}>{t("visitDetail.measuredAt")}</label>
-                    <input
-                      type="datetime-local"
-                      value={form.measured_at}
-                      onChange={(e) => setForm((f) => ({ ...f, measured_at: e.target.value }))}
-                      style={input}
-                    />
-                  </div>
-
-                  <div className="cf-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                    <Field labelText={t("visitDetail.temperatureC")} value={form.temperature_c} onChange={(v) => setForm((f) => ({ ...f, temperature_c: v }))} placeholder="38.5" />
-                    <Field labelText={t("visitDetail.oxygenSat")} value={form.oxygen_saturation_pct} onChange={(v) => setForm((f) => ({ ...f, oxygen_saturation_pct: v }))} placeholder="98" />
-                  </div>
-
-                  <div className="cf-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                    <Field labelText={t("visitDetail.weightKg")} value={form.weight_kg} onChange={(v) => setForm((f) => ({ ...f, weight_kg: v }))} placeholder="70" />
-                    <Field labelText={t("visitDetail.heightCm")} value={form.height_cm} onChange={(v) => setForm((f) => ({ ...f, height_cm: v }))} placeholder="175" />
-                  </div>
-
-                  <div className="cf-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                    <Field labelText={t("visitDetail.bpSystolic")} value={form.bp_systolic} onChange={(v) => setForm((f) => ({ ...f, bp_systolic: v }))} placeholder="120" />
-                    <Field labelText={t("visitDetail.bpDiastolic")} value={form.bp_diastolic} onChange={(v) => setForm((f) => ({ ...f, bp_diastolic: v }))} placeholder="80" />
-                  </div>
-
-                  <div className="cf-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                    <Field labelText={t("visitDetail.heartRateBpm")} value={form.heart_rate_bpm} onChange={(v) => setForm((f) => ({ ...f, heart_rate_bpm: v }))} placeholder="85" />
-                    <Field labelText={t("visitDetail.respRateRpm")} value={form.respiratory_rate_rpm} onChange={(v) => setForm((f) => ({ ...f, respiratory_rate_rpm: v }))} placeholder="18" />
-                  </div>
-
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 10 }}>
-                    <Field
-                      labelText={t("visitDetail.headCircumferenceCm")}
-                      value={form.head_circumference_cm}
-                      onChange={(v) => setForm((f) => ({ ...f, head_circumference_cm: v }))}
-                      placeholder="47"
-                    />
-                    <Field labelText={t("visits.notes")} value={form.notes} onChange={(v) => setForm((f) => ({ ...f, notes: v }))} placeholder={t("patientVisits.notesPlaceholder")} />
-                  </div>
+                  <Field
+                    labelText={t("visitDetail.headCircumferenceCm")}
+                    value={form.head_circumference_cm}
+                    onChange={(v) => setForm((f) => ({ ...f, head_circumference_cm: v }))}
+                    placeholder="47"
+                  />
+                  <Field labelText={t("visits.notes")} value={form.notes} onChange={(v) => setForm((f) => ({ ...f, notes: v }))} placeholder={t("patientVisits.notesPlaceholder")} />
                 </div>
-
-                <button type="submit" disabled={saving} style={{ ...btnPrimary, width: "100%", marginTop: 12 }}>
-                  {saving ? t("common.saving") : t("visitDetail.saveVitals")}
-                </button>
-              </form>
-            ) : null}
-          </Card>
-
-          {/* Vitals history */}
-          <Card title={t("visitDetail.vitalsHistory")} subtitle={t("visitDetail.recordCount", { count: vitalsSorted.length })}>
-            {vitalsSorted.length === 0 ? (
-              <div style={{ color: "var(--muted)" }}>{t("visitDetail.noVitalsRecordedYet")}</div>
-            ) : (
-              <div className="cf-table-wrap" style={{ marginTop: 8, overflowX: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                  <thead>
-                    <tr style={{ background: "var(--surface)" }}>
-                      <th style={th}>{t("visitDetail.measured")}</th>
-                      <th style={th}>{t("visitDetail.temp")}</th>
-                      <th style={th}>BP</th>
-                      <th style={th}>HR</th>
-                      <th style={th}>SpO2</th>
-                      <th style={{ ...th, textAlign: "right" }}></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {vitalsSorted.slice(0, 8).map((x) => (
-                      <tr key={x.id} style={{ borderTop: "1px solid var(--border)" }}>
-                        <td style={td}>{formatDateTime(x.measured_at)}</td>
-                        <td style={td}>{x.temperature_c != null ? `${x.temperature_c}°C` : "-"}</td>
-                        <td style={td}>{x.bp_systolic != null && x.bp_diastolic != null ? `${x.bp_systolic}/${x.bp_diastolic}` : "-"}</td>
-                        <td style={td}>{x.heart_rate_bpm != null ? x.heart_rate_bpm : "-"}</td>
-                        <td style={td}>{x.oxygen_saturation_pct != null ? `${x.oxygen_saturation_pct}%` : "-"}</td>
-                        <td style={{ ...td, textAlign: "right" }}>
-                          <button onClick={() => openVitalsEdit(x)} style={btnSmall}>
-                            {t("common.edit")}
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-
-                {vitalsSorted.length > 8 ? (
-                  <div style={{ marginTop: 8, color: "var(--muted)", fontSize: 12 }}>
-                    {t("visitDetail.showingLatest8")}
-                  </div>
-                ) : null}
               </div>
-            )}
+
+              <button type="submit" disabled={saving} style={{ ...btnPrimary, width: "100%", marginTop: 12 }}>
+                {saving ? t("common.saving") : t("visitDetail.saveVitals")}
+              </button>
+            </form>
+          ) : null}
+        </Card>
+
+        {/* ── Vitals History ── */}
+        <Card title={t("visitDetail.vitalsHistory")} subtitle={t("visitDetail.recordCount", { count: vitalsSorted.length })}>
+          {vitalsSorted.length === 0 ? (
+            <div style={{ color: "var(--muted)" }}>{t("visitDetail.noVitalsRecordedYet")}</div>
+          ) : (
+            <div className="cf-table-wrap" style={{ marginTop: 8, overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr style={{ background: "var(--surface)" }}>
+                    <th style={th}>{t("visitDetail.measured")}</th>
+                    <th style={th}>{t("visitDetail.temp")}</th>
+                    <th style={th}>BP</th>
+                    <th style={th}>HR</th>
+                    <th style={th}>SpO2</th>
+                    <th style={{ ...th, textAlign: "right" }}></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {vitalsSorted.slice(0, 8).map((x) => (
+                    <tr key={x.id} style={{ borderTop: "1px solid var(--border)" }}>
+                      <td style={td}>{formatDateTime(x.measured_at)}</td>
+                      <td style={td}>{x.temperature_c != null ? `${x.temperature_c}°C` : "-"}</td>
+                      <td style={td}>{x.bp_systolic != null && x.bp_diastolic != null ? `${x.bp_systolic}/${x.bp_diastolic}` : "-"}</td>
+                      <td style={td}>{x.heart_rate_bpm != null ? x.heart_rate_bpm : "-"}</td>
+                      <td style={td}>{x.oxygen_saturation_pct != null ? `${x.oxygen_saturation_pct}%` : "-"}</td>
+                      <td style={{ ...td, textAlign: "right" }}>
+                        <button onClick={() => openVitalsEdit(x)} style={btnSmall}>
+                          {t("common.edit")}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {vitalsSorted.length > 8 ? (
+                <div style={{ marginTop: 8, color: "var(--muted)", fontSize: 12 }}>
+                  {t("visitDetail.showingLatest8")}
+                </div>
+              ) : null}
+            </div>
+          )}
+        </Card>
+
+        {/* ── Clinical Examination (view mode only — edit mode includes these in the form above) ── */}
+        {!editMode && (
+          <Card title={t("visitDetail.clinicalExam")}>
+            <div className="cf-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div>
+                <b>{t("patientVisits.physicalExam")}:</b>
+                <div style={box}>{visit.physical_exam || "-"}</div>
+              </div>
+              <div>
+                <b>{t("patientVisits.complementaryExam")}:</b>
+                <div style={box}>{visit.complementary_exam || "-"}</div>
+              </div>
+            </div>
+
+            <div className="cf-form-grid" style={{ marginTop: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div>
+                <b>{t("patientVisits.assessment")}:</b>
+                <div style={box}>{visit.assessment || "-"}</div>
+              </div>
+              <div>
+                <b>{t("patientVisits.plan")}:</b>
+                <div style={box}>{visit.plan || "-"}</div>
+              </div>
+            </div>
+
+            <div className="cf-form-grid" style={{ marginTop: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div>
+                <b>{t("patientVisits.treatment")}:</b>
+                <div style={box}>{visit.treatment || "-"}</div>
+              </div>
+              <div>
+                <b>{t("visits.notes")}:</b>
+                <div style={box}>{visit.notes || "-"}</div>
+              </div>
+            </div>
           </Card>
-        </div>
+        )}
+
+        {/* ── Prescriptions ── */}
+        <Card
+          title={t("prescriptions.title")}
+          right={
+            <button onClick={loadPrescriptions} style={btn} disabled={rxLoading}>
+              {rxLoading ? t("common.loading") : t("common.refresh")}
+            </button>
+          }
+          subtitle={t("visitDetail.prescriptionCount", { count: prescriptions.length })}
+        >
+          {rxError ? <p style={{ color: "#ff6b6b", marginTop: 10 }}>{rxError}</p> : null}
+
+          {!rxLoading && prescriptions.length === 0 ? (
+            <p style={{ color: "var(--muted)", marginTop: 10 }}>{t("visitDetail.noPrescriptions")}</p>
+          ) : null}
+
+          {prescriptions.length > 0 ? (
+            <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
+              {prescriptions.map((rx) => (
+                <div
+                  key={rx.id}
+                  style={{
+                    padding: 12,
+                    border: "1px solid var(--border)",
+                    borderRadius: 14,
+                    background: "var(--surface)",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: 10,
+                    alignItems: "center",
+                    color: "var(--text)",
+                  }}
+                >
+                  <div>
+                    <b>{t("visitDetail.prescriptionNumber", { id: rx.id })}</b>
+                    <div style={{ color: "var(--muted)", fontSize: 12, marginTop: 4 }}>
+                      {t("visitDetail.created")}: {formatDateTime(rx.created_at)}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => handleDownloadPdf(rx.id)}
+                    disabled={rxDownloadingId === rx.id}
+                    style={{ ...btnPrimary, whiteSpace: "nowrap" }}
+                    title={t("visitDetail.downloadPdf")}
+                  >
+                    {rxDownloadingId === rx.id ? t("visitDetail.downloading") : "PDF"}
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </Card>
       </div>
 
       {/* Vitals edit modal */}
