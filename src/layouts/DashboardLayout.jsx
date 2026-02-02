@@ -1,4 +1,5 @@
 // src/layouts/DashboardLayout.jsx
+import { useState } from "react";
 import { NavLink, Link, Outlet, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import ThemeToggle from "../components/ThemeToggle";
@@ -76,21 +77,50 @@ const navItemStyle = ({ isActive }) => ({
 export default function DashboardLayout() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   function handleLogout() {
     logout();
     navigate("/login", { replace: true });
   }
 
+  // Close sidebar on navigation (mobile)
+  function handleNavClick() {
+    setSidebarOpen(false);
+  }
+
   return (
-    <div style={{ 
-      display: "grid", 
-      gridTemplateColumns: "260px 1fr", 
-      minHeight: "100vh",
-      background: "var(--bg)"
-    }}>
+    <div
+      className="cf-layout"
+      style={{
+        display: "grid",
+        gridTemplateColumns: "260px 1fr",
+        minHeight: "100vh",
+        background: "var(--bg)"
+      }}
+    >
+      {/* Hamburger button (visible only on mobile via CSS) */}
+      <button
+        className="cf-hamburger"
+        onClick={() => setSidebarOpen(true)}
+        aria-label="Open menu"
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+
+      {/* Backdrop (visible only on mobile when sidebar is open) */}
+      <div
+        className={`cf-sidebar-backdrop${sidebarOpen ? " cf-sidebar-backdrop--visible" : ""}`}
+        onClick={() => setSidebarOpen(false)}
+      />
+
       {/* Sidebar */}
       <aside
+        className={`cf-sidebar${sidebarOpen ? " cf-sidebar--open" : ""}`}
         style={{
           background: "var(--sidebar-bg)",
           color: "var(--sidebar-text)",
@@ -125,10 +155,11 @@ export default function DashboardLayout() {
         {/* Navigation */}
         <nav style={{ display: "flex", flexDirection: "column", gap: "4px", flex: 1 }}>
           {navItems.map(({ to, labelKey, Icon }) => (
-            <NavLink 
-              key={to} 
-              to={to} 
+            <NavLink
+              key={to}
+              to={to}
               style={navItemStyle}
+              onClick={handleNavClick}
               onMouseEnter={(e) => {
                 if (!e.currentTarget.classList.contains("active")) {
                   e.currentTarget.style.background = "var(--sidebar-hover)";
@@ -159,6 +190,7 @@ export default function DashboardLayout() {
           <NavLink
             to="/profile"
             style={navItemStyle}
+            onClick={handleNavClick}
             onMouseEnter={(e) => {
               if (!e.currentTarget.classList.contains("active")) {
                 e.currentTarget.style.background = "var(--sidebar-hover)";

@@ -1,0 +1,135 @@
+/* src/styles/responsive.css
+ *
+ * Mobile-only overrides (≤768px).
+ * Uses !important to override inline styles in JSX components.
+ * Desktop layout is untouched — every rule lives inside a media query
+ * (except the hamburger/backdrop which are hidden on desktop by default).
+ */
+
+/* Hamburger hidden on desktop */
+.cf-hamburger {
+  display: none !important;
+}
+
+/* Backdrop hidden on desktop */
+.cf-sidebar-backdrop {
+  display: none;
+}
+
+/* ============================================================
+   MOBILE BREAKPOINT
+   ============================================================ */
+@media (max-width: 768px) {
+
+  /* ---------- Layout: sidebar + main ---------- */
+  .cf-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .cf-sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 280px !important;
+    height: 100vh !important;
+    z-index: 1100 !important;
+    transform: translateX(-100%) !important;
+    transition: transform 250ms ease !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
+  }
+
+  .cf-sidebar.cf-sidebar--open {
+    transform: translateX(0) !important;
+  }
+
+  /* Backdrop behind open sidebar */
+  .cf-sidebar-backdrop.cf-sidebar-backdrop--visible {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1099;
+  }
+
+  /* Hamburger button — visible only on mobile */
+  .cf-hamburger {
+    display: flex !important;
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 1098;
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+  }
+
+  /* Push main content down so hamburger doesn't overlap */
+  .cf-page {
+    padding-top: 64px !important;
+  }
+
+  /* ---------- 2-column grids → 1 column ---------- */
+  .cf-main-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .cf-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ---------- Tables: horizontal scroll ---------- */
+  .cf-table-wrap {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    margin-left: -8px;
+    margin-right: -8px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .cf-table-wrap table {
+    min-width: 600px;
+  }
+
+  /* ---------- Modals: fit small screens ---------- */
+  .cf-modal-content {
+    max-width: calc(100% - 24px) !important;
+    margin: 12px !important;
+    max-height: 90vh !important;
+  }
+
+  /* ---------- Button rows: wrap ---------- */
+  .cf-btn-row {
+    flex-wrap: wrap !important;
+  }
+
+  /* ---------- Profile header: stack ---------- */
+  .cf-profile-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+  }
+
+  /* ---------- Calendar grid: smaller cells ---------- */
+  .cf-calendar-grid {
+    gap: 2px !important;
+  }
+
+  .cf-calendar-grid > div {
+    font-size: 0.75rem !important;
+  }
+
+  /* ---------- Typography: scale down ---------- */
+  h1 { font-size: 1.5rem !important; }
+  h2 { font-size: 1.25rem !important; }
+}

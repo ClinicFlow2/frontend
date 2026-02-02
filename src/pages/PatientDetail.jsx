@@ -79,7 +79,7 @@ function LoadingSkeleton() {
   return (
     <div className="cf-animate-in" style={{ padding: 24 }}>
       <div className="cf-skeleton" style={{ height: 24, width: 100, borderRadius: 8, marginBottom: 24 }} />
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 24 }}>
+      <div className="cf-main-grid" style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 24 }}>
         <div className="cf-skeleton" style={{ height: 300, borderRadius: 16 }} />
         <div className="cf-skeleton" style={{ height: 300, borderRadius: 16 }} />
       </div>
@@ -330,7 +330,7 @@ export default function PatientDetail() {
           background: "rgba(0, 0, 0, 0.5)", display: "flex", alignItems: "center", justifyContent: "center",
           zIndex: 1000,
         }}>
-          <div style={{
+          <div className="cf-modal-content" style={{
             background: "var(--card)", padding: 24, borderRadius: 16,
             maxWidth: 400, width: "90%", boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
           }}>

@@ -107,6 +107,7 @@ export default function DayAppointmentsModal({
       onClick={onClose}
     >
       <div
+        className="cf-modal-content"
         style={{
           background: "var(--card)",
           borderRadius: 16,

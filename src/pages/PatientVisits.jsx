@@ -188,7 +188,7 @@ export default function PatientVisits() {
       >
         <h3 style={{ marginTop: 0, color: "var(--text)" }}>{t("visits.newVisit")}</h3>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+        <div className="cf-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
           <div>
             <label style={label}>{t("patientVisits.visitType")}</label>
             <select
@@ -356,6 +356,7 @@ export default function PatientVisits() {
             </div>
 
             <div
+              className="cf-table-wrap"
               style={{
                 marginTop: 10,
                 overflowX: "auto",

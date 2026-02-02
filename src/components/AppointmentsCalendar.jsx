@@ -216,7 +216,7 @@ export default function AppointmentsCalendar({
       </div>
 
       {/* Day Names Header */}
-      <div style={{
+      <div className="cf-calendar-grid" style={{
         display: "grid",
         gridTemplateColumns: "repeat(7, 1fr)",
         borderBottom: "1px solid var(--border)",
@@ -241,7 +241,7 @@ export default function AppointmentsCalendar({
       </div>
 
       {/* Calendar Grid */}
-      <div style={{
+      <div className="cf-calendar-grid" style={{
         display: "grid",
         gridTemplateColumns: "repeat(7, 1fr)",
         gridTemplateRows: "repeat(6, minmax(100px, auto))",

@@ -311,7 +311,7 @@ export default function Profile() {
       )}
 
       {/* Profile Header Card */}
-      <div style={{
+      <div className="cf-profile-header" style={{
         background: "var(--card)",
         border: "1px solid var(--border)",
         borderRadius: 16,
@@ -407,7 +407,7 @@ export default function Profile() {
 
         {editMode ? (
           <form onSubmit={handleSaveProfile}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <div className="cf-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
               <div>
                 <label style={labelStyle}>{t("profile.firstName")}</label>
                 <input
@@ -569,7 +569,7 @@ export default function Profile() {
             </div>
           </form>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+          <div className="cf-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
             <InfoItem icon={<Icons.Mail />} label={t("profile.email")} value={user?.email || "-"} />
             <InfoItem icon={<Icons.Phone />} label={t("profile.phone")} value={user?.profile?.phone || "-"} />
             <InfoItem icon={<Icons.Building />} label={t("profile.department")} value={user?.profile?.department || "-"} />
@@ -1024,7 +1024,7 @@ function AvailabilityCalendar({ t }) {
       </div>
 
       {/* Day Headers */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4, marginBottom: 4 }}>
+      <div className="cf-calendar-grid" style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4, marginBottom: 4 }}>
         {dayNames.map((day) => (
           <div key={day} style={{
             textAlign: "center", padding: 8, fontSize: "0.75rem",
@@ -1041,7 +1041,7 @@ function AvailabilityCalendar({ t }) {
           {t("common.loading")}...
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
+        <div className="cf-calendar-grid" style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
           {days.map((day, idx) => {
             if (day === null) {
               return <div key={`empty-${idx}`} />;

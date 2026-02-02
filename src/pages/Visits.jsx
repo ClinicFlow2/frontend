@@ -160,6 +160,7 @@ export default function Visits() {
         <p style={{ color: "var(--muted)", marginTop: 16 }}>{t("visits.noPatients")}</p>
       ) : patients.length > 0 ? (
         <div
+          className="cf-table-wrap"
           style={{
             marginTop: 16,
             overflowX: "auto",

@@ -347,7 +347,7 @@ export default function VisitDetail() {
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div className="cf-skeleton" style={{ height: 32, width: 200 }} />
           <div className="cf-skeleton" style={{ height: 20, width: 300 }} />
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+          <div className="cf-main-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
             <div className="cf-skeleton" style={{ height: 300, borderRadius: 16 }} />
             <div className="cf-skeleton" style={{ height: 300, borderRadius: 16 }} />
           </div>
@@ -366,7 +366,7 @@ export default function VisitDetail() {
           ← {t("visitDetail.backToVisits")}
         </button>
 
-        <div style={{ marginLeft: "auto", display: "flex", gap: 10, flexWrap: "wrap" }}>
+        <div className="cf-btn-row" style={{ marginLeft: "auto", display: "flex", gap: 10, flexWrap: "wrap" }}>
           <button
             onClick={handleDownloadSummaryPdf}
             disabled={summaryDownloading}
@@ -410,6 +410,7 @@ export default function VisitDetail() {
 
       {/* Main grid */}
       <div
+        className="cf-main-grid"
         style={{
           marginTop: 14,
           display: "grid",
@@ -569,7 +570,7 @@ export default function VisitDetail() {
               </form>
             ) : (
               <>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div className="cf-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                   <div>
                     <div style={kv}><b>{t("patientVisits.type")}:</b> {formatVisitType(visit.visit_type, t)}</div>
                     <div style={kv}><b>{t("visits.chiefComplaint")}:</b> {visit.chief_complaint || "-"}</div>
@@ -581,7 +582,7 @@ export default function VisitDetail() {
                   </div>
                 </div>
 
-                <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div className="cf-form-grid" style={{ marginTop: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                   <div>
                     <b>{t("visitDetail.hpi")}:</b>
                     <div style={box}>{visit.history_of_present_illness || "-"}</div>
@@ -592,7 +593,7 @@ export default function VisitDetail() {
                   </div>
                 </div>
 
-                <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div className="cf-form-grid" style={{ marginTop: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                   <div>
                     <b>{t("patientVisits.complementaryExam")}:</b>
                     <div style={box}>{visit.complementary_exam || "-"}</div>
@@ -603,7 +604,7 @@ export default function VisitDetail() {
                   </div>
                 </div>
 
-                <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div className="cf-form-grid" style={{ marginTop: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                   <div>
                     <b>{t("patientVisits.plan")}:</b>
                     <div style={box}>{visit.plan || "-"}</div>
@@ -727,22 +728,22 @@ export default function VisitDetail() {
                     />
                   </div>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  <div className="cf-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                     <Field labelText={t("visitDetail.temperatureC")} value={form.temperature_c} onChange={(v) => setForm((f) => ({ ...f, temperature_c: v }))} placeholder="38.5" />
                     <Field labelText={t("visitDetail.oxygenSat")} value={form.oxygen_saturation_pct} onChange={(v) => setForm((f) => ({ ...f, oxygen_saturation_pct: v }))} placeholder="98" />
                   </div>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  <div className="cf-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                     <Field labelText={t("visitDetail.weightKg")} value={form.weight_kg} onChange={(v) => setForm((f) => ({ ...f, weight_kg: v }))} placeholder="70" />
                     <Field labelText={t("visitDetail.heightCm")} value={form.height_cm} onChange={(v) => setForm((f) => ({ ...f, height_cm: v }))} placeholder="175" />
                   </div>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  <div className="cf-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                     <Field labelText={t("visitDetail.bpSystolic")} value={form.bp_systolic} onChange={(v) => setForm((f) => ({ ...f, bp_systolic: v }))} placeholder="120" />
                     <Field labelText={t("visitDetail.bpDiastolic")} value={form.bp_diastolic} onChange={(v) => setForm((f) => ({ ...f, bp_diastolic: v }))} placeholder="80" />
                   </div>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  <div className="cf-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                     <Field labelText={t("visitDetail.heartRateBpm")} value={form.heart_rate_bpm} onChange={(v) => setForm((f) => ({ ...f, heart_rate_bpm: v }))} placeholder="85" />
                     <Field labelText={t("visitDetail.respRateRpm")} value={form.respiratory_rate_rpm} onChange={(v) => setForm((f) => ({ ...f, respiratory_rate_rpm: v }))} placeholder="18" />
                   </div>
@@ -770,7 +771,7 @@ export default function VisitDetail() {
             {vitalsSorted.length === 0 ? (
               <div style={{ color: "var(--muted)" }}>{t("visitDetail.noVitalsRecordedYet")}</div>
             ) : (
-              <div style={{ marginTop: 8, overflowX: "auto" }}>
+              <div className="cf-table-wrap" style={{ marginTop: 8, overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead>
                     <tr style={{ background: "var(--surface)" }}>
@@ -814,7 +815,7 @@ export default function VisitDetail() {
       {/* Vitals edit modal */}
       {editingVitals && (
         <div style={modalOverlay} onClick={closeVitalsEdit}>
-          <div style={modalContent} onClick={(e) => e.stopPropagation()}>
+          <div className="cf-modal-content" style={modalContent} onClick={(e) => e.stopPropagation()}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
               <h3 style={{ margin: 0, fontSize: 18, color: "var(--text)" }}>{t("visitDetail.editVitals")}</h3>
               <button onClick={closeVitalsEdit} style={{ ...btn, padding: "6px 10px", fontSize: 16, lineHeight: 1 }}>✕</button>
