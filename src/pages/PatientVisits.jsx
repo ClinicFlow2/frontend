@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { getPatient } from "../api/patients";
-import { createVisit, getVisits, deleteVisit } from "../api/visits";
+import { createVisit, createVitals, getVisits, deleteVisit } from "../api/visits";
 import { formatDateTime } from "../utils/dateFormat";
 
 export default function PatientVisits() {
@@ -35,6 +35,21 @@ export default function PatientVisits() {
     notes: "",
   });
 
+  // Vitals form (embedded in create-visit)
+  const [vitalsForm, setVitalsForm] = useState({
+    measured_at: "",
+    temperature_c: "",
+    bp_systolic: "",
+    bp_diastolic: "",
+    heart_rate_bpm: "",
+    respiratory_rate_rpm: "",
+    oxygen_saturation_pct: "",
+    weight_kg: "",
+    height_cm: "",
+    head_circumference_cm: "",
+    vitals_notes: "",
+  });
+
   async function load() {
     setLoading(true);
     setError("");
@@ -54,6 +69,48 @@ export default function PatientVisits() {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  function toNumberOrNull(value, { int = false } = {}) {
+    if (value == null) return null;
+    const trimmed = String(value).trim();
+    if (!trimmed) return null;
+    const n = int ? Number.parseInt(trimmed, 10) : Number.parseFloat(trimmed);
+    if (Number.isNaN(n)) return null;
+    return int ? Math.trunc(n) : n;
+  }
+
+  function hasAnyVitals() {
+    const f = vitalsForm;
+    return !!(
+      f.measured_at ||
+      String(f.temperature_c).trim() ||
+      String(f.bp_systolic).trim() ||
+      String(f.bp_diastolic).trim() ||
+      String(f.heart_rate_bpm).trim() ||
+      String(f.respiratory_rate_rpm).trim() ||
+      String(f.oxygen_saturation_pct).trim() ||
+      String(f.weight_kg).trim() ||
+      String(f.height_cm).trim() ||
+      String(f.head_circumference_cm).trim() ||
+      String(f.vitals_notes).trim()
+    );
+  }
+
+  function resetVitalsForm() {
+    setVitalsForm({
+      measured_at: "",
+      temperature_c: "",
+      bp_systolic: "",
+      bp_diastolic: "",
+      heart_rate_bpm: "",
+      respiratory_rate_rpm: "",
+      oxygen_saturation_pct: "",
+      weight_kg: "",
+      height_cm: "",
+      head_circumference_cm: "",
+      vitals_notes: "",
+    });
+  }
 
   async function handleCreate(e) {
     e.preventDefault();
@@ -77,7 +134,33 @@ export default function PatientVisits() {
         notes: form.notes.trim(),
       };
 
-      await createVisit(payload);
+      const createdVisit = await createVisit(payload);
+
+      // If vitals were filled, create vitals record linked to the new visit
+      let vitalsWarning = "";
+      if (hasAnyVitals() && createdVisit?.id) {
+        try {
+          const f = vitalsForm;
+          const vitalsPayload = {
+            visit: createdVisit.id,
+            ...(f.measured_at ? { measured_at: f.measured_at } : {}),
+            ...(toNumberOrNull(f.temperature_c) != null ? { temperature_c: toNumberOrNull(f.temperature_c) } : {}),
+            ...(toNumberOrNull(f.weight_kg) != null ? { weight_kg: toNumberOrNull(f.weight_kg) } : {}),
+            ...(toNumberOrNull(f.height_cm) != null ? { height_cm: toNumberOrNull(f.height_cm) } : {}),
+            ...(toNumberOrNull(f.head_circumference_cm) != null ? { head_circumference_cm: toNumberOrNull(f.head_circumference_cm) } : {}),
+            ...(toNumberOrNull(f.bp_systolic, { int: true }) != null ? { bp_systolic: toNumberOrNull(f.bp_systolic, { int: true }) } : {}),
+            ...(toNumberOrNull(f.bp_diastolic, { int: true }) != null ? { bp_diastolic: toNumberOrNull(f.bp_diastolic, { int: true }) } : {}),
+            ...(toNumberOrNull(f.heart_rate_bpm, { int: true }) != null ? { heart_rate_bpm: toNumberOrNull(f.heart_rate_bpm, { int: true }) } : {}),
+            ...(toNumberOrNull(f.respiratory_rate_rpm, { int: true }) != null ? { respiratory_rate_rpm: toNumberOrNull(f.respiratory_rate_rpm, { int: true }) } : {}),
+            ...(toNumberOrNull(f.oxygen_saturation_pct, { int: true }) != null ? { oxygen_saturation_pct: toNumberOrNull(f.oxygen_saturation_pct, { int: true }) } : {}),
+            ...(String(f.vitals_notes || "").trim() ? { notes: String(f.vitals_notes).trim() } : {}),
+          };
+          await createVitals(vitalsPayload);
+        } catch (vitalsErr) {
+          console.log("CREATE VITALS ERROR (visit was created):", vitalsErr?.response?.data || vitalsErr);
+          vitalsWarning = " " + t("patientVisits.vitalsCreateWarning");
+        }
+      }
 
       setForm((f) => ({
         ...f,
@@ -92,8 +175,9 @@ export default function PatientVisits() {
         treatment: "",
         notes: "",
       }));
+      resetVitalsForm();
 
-      setSuccess(t("patientVisits.createSuccess"));
+      setSuccess(t("patientVisits.createSuccess") + vitalsWarning);
       await load();
     } catch (err) {
       console.log("CREATE VISIT ERROR:", err?.response?.data || err);
@@ -222,7 +306,7 @@ export default function PatientVisits() {
           />
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 10 }}>
+        <div className="cf-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 10 }}>
           <div>
             <label style={label}>{t("patientVisits.medicalHistory")}</label>
             <textarea
@@ -246,7 +330,139 @@ export default function PatientVisits() {
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 10 }}>
+        {/* ── Paramètres vitaux ── */}
+        <div style={{
+          marginTop: 16,
+          padding: 14,
+          border: "1px solid var(--border)",
+          borderRadius: 14,
+          background: "var(--surface)",
+        }}>
+          <div style={{ fontWeight: 600, fontSize: 15, color: "var(--text)", marginBottom: 10 }}>
+            {t("visits.vitals")}
+          </div>
+          <div style={{ color: "var(--muted)", fontSize: 12, marginBottom: 12 }}>
+            {t("patientVisits.vitalsOptionalHint")}
+          </div>
+
+          <div className="cf-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div>
+              <label style={label}>{t("visitDetail.temperatureC")}</label>
+              <input
+                value={vitalsForm.temperature_c}
+                onChange={(e) => setVitalsForm((f) => ({ ...f, temperature_c: e.target.value }))}
+                placeholder="38.5"
+                style={input}
+              />
+            </div>
+            <div>
+              <label style={label}>{t("visitDetail.oxygenSat")}</label>
+              <input
+                value={vitalsForm.oxygen_saturation_pct}
+                onChange={(e) => setVitalsForm((f) => ({ ...f, oxygen_saturation_pct: e.target.value }))}
+                placeholder="98"
+                style={input}
+              />
+            </div>
+          </div>
+
+          <div className="cf-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 10 }}>
+            <div>
+              <label style={label}>{t("visitDetail.bpSystolic")}</label>
+              <input
+                value={vitalsForm.bp_systolic}
+                onChange={(e) => setVitalsForm((f) => ({ ...f, bp_systolic: e.target.value }))}
+                placeholder="120"
+                style={input}
+              />
+            </div>
+            <div>
+              <label style={label}>{t("visitDetail.bpDiastolic")}</label>
+              <input
+                value={vitalsForm.bp_diastolic}
+                onChange={(e) => setVitalsForm((f) => ({ ...f, bp_diastolic: e.target.value }))}
+                placeholder="80"
+                style={input}
+              />
+            </div>
+          </div>
+
+          <div className="cf-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 10 }}>
+            <div>
+              <label style={label}>{t("visitDetail.heartRateBpm")}</label>
+              <input
+                value={vitalsForm.heart_rate_bpm}
+                onChange={(e) => setVitalsForm((f) => ({ ...f, heart_rate_bpm: e.target.value }))}
+                placeholder="85"
+                style={input}
+              />
+            </div>
+            <div>
+              <label style={label}>{t("visitDetail.respRateRpm")}</label>
+              <input
+                value={vitalsForm.respiratory_rate_rpm}
+                onChange={(e) => setVitalsForm((f) => ({ ...f, respiratory_rate_rpm: e.target.value }))}
+                placeholder="18"
+                style={input}
+              />
+            </div>
+          </div>
+
+          <div className="cf-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 10 }}>
+            <div>
+              <label style={label}>{t("visitDetail.weightKg")}</label>
+              <input
+                value={vitalsForm.weight_kg}
+                onChange={(e) => setVitalsForm((f) => ({ ...f, weight_kg: e.target.value }))}
+                placeholder="70"
+                style={input}
+              />
+            </div>
+            <div>
+              <label style={label}>{t("visitDetail.heightCm")}</label>
+              <input
+                value={vitalsForm.height_cm}
+                onChange={(e) => setVitalsForm((f) => ({ ...f, height_cm: e.target.value }))}
+                placeholder="175"
+                style={input}
+              />
+            </div>
+          </div>
+
+          <div className="cf-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 10 }}>
+            <div>
+              <label style={label}>{t("visitDetail.headCircumferenceCm")}</label>
+              <input
+                value={vitalsForm.head_circumference_cm}
+                onChange={(e) => setVitalsForm((f) => ({ ...f, head_circumference_cm: e.target.value }))}
+                placeholder="47"
+                style={input}
+              />
+            </div>
+            <div>
+              <label style={label}>{t("visitDetail.measuredAt")}</label>
+              <input
+                type="datetime-local"
+                value={vitalsForm.measured_at}
+                onChange={(e) => setVitalsForm((f) => ({ ...f, measured_at: e.target.value }))}
+                style={input}
+              />
+            </div>
+          </div>
+
+          <div style={{ marginTop: 10 }}>
+            <label style={label}>{t("visits.notes")} ({t("visits.vitals").toLowerCase()})</label>
+            <input
+              value={vitalsForm.vitals_notes}
+              onChange={(e) => setVitalsForm((f) => ({ ...f, vitals_notes: e.target.value }))}
+              placeholder={t("patientVisits.notesPlaceholder")}
+              style={input}
+            />
+          </div>
+        </div>
+
+        {/* ── Physical Exam and below ── */}
+        <div className="cf-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 10 }}>
           <div>
             <label style={label}>{t("patientVisits.physicalExam")}</label>
             <textarea
@@ -270,7 +486,7 @@ export default function PatientVisits() {
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 10 }}>
+        <div className="cf-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 10 }}>
           <div>
             <label style={label}>{t("patientVisits.assessment")}</label>
             <textarea

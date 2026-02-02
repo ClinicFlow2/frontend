@@ -173,7 +173,9 @@
     "type": "Type",
     "vitalsLatest": "Paramètres vitaux (derniers)",
     "openVisit": "Ouvrir la visite",
-    "vitalsRecorded": "Paramètres vitaux enregistrés"
+    "vitalsRecorded": "Paramètres vitaux enregistrés",
+    "vitalsOptionalHint": "Optionnel — laissez vide si non mesuré pendant cette visite.",
+    "vitalsCreateWarning": "(Attention : les paramètres vitaux n'ont pas pu être enregistrés. Vous pouvez les ajouter depuis la page de détail de la visite.)"
   },
   "visitDetail": {
     "backToVisits": "Retour aux visites",

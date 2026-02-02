@@ -173,7 +173,9 @@
     "type": "Type",
     "vitalsLatest": "Vital parameters (latest)",
     "openVisit": "Open visit",
-    "vitalsRecorded": "Vital parameters recorded"
+    "vitalsRecorded": "Vital parameters recorded",
+    "vitalsOptionalHint": "Optional — leave empty if not measured during this visit.",
+    "vitalsCreateWarning": "(Warning: vital parameters could not be saved. You can add them from the visit detail page.)"
   },
   "visitDetail": {
     "backToVisits": "Back to visits",
