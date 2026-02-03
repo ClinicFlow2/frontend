@@ -20,6 +20,22 @@ export function formatDate(date) {
 }
 
 /**
+ * Format a date-only string (YYYY-MM-DD) as DD-MM-YYYY.
+ * Pure string manipulation — no Date object, no timezone shifts.
+ * Use this for date_of_birth and any calendar date that has no time component.
+ * @param {string} dateStr - Date in YYYY-MM-DD format (from API)
+ * @returns {string} Formatted as DD-MM-YYYY, or "-" if invalid
+ */
+export function formatDOB(dateStr) {
+  if (!dateStr || typeof dateStr !== "string") return "-";
+  const parts = dateStr.split("-");
+  if (parts.length !== 3) return "-";
+  const [year, month, day] = parts;
+  if (!year || !month || !day) return "-";
+  return `${day}-${month}-${year}`;
+}
+
+/**
  * Format a time as HH:MM (24-hour)
  * @param {Date|string|number} date - The date/time to format
  * @returns {string} Formatted time string or "-" if invalid

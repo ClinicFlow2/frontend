@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { getPatient, updatePatient, archivePatient, restorePatient } from "../api/patients";
 import { api } from "../api/client";
 import { getProfile } from "../api/profile";
-import { formatDate, formatTime, formatDateTime, formatDateLong } from "../utils/dateFormat";
+import { formatDate, formatDOB, formatTime, formatDateTime, formatDateLong } from "../utils/dateFormat";
 import PatientFiles from "../components/PatientFiles";
 import PatientPrescriptions from "../components/PatientPrescriptions";
 
@@ -64,12 +64,16 @@ const Icons = {
 };
 
 function calculateAge(dateOfBirth) {
-  if (!dateOfBirth) return null;
+  if (!dateOfBirth || typeof dateOfBirth !== "string") return null;
+  const parts = dateOfBirth.split("-");
+  if (parts.length !== 3) return null;
+  const [birthYear, birthMonth, birthDay] = parts.map(Number);
   const today = new Date();
-  const birthDate = new Date(dateOfBirth);
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const monthDiff = today.getMonth() - birthDate.getMonth();
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+  const todayYear = today.getFullYear();
+  const todayMonth = today.getMonth() + 1;
+  const todayDay = today.getDate();
+  let age = todayYear - birthYear;
+  if (todayMonth < birthMonth || (todayMonth === birthMonth && todayDay < birthDay)) {
     age--;
   }
   return age;
@@ -483,7 +487,7 @@ export default function PatientDetail() {
             <h3 style={cardHeaderStyle}>{t("patients.personalInformation")}</h3>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <InfoRow label={t("patients.patientCode")} value={patient.patient_code || "-"} mono />
-              <InfoRow label={t("patients.dateOfBirth")} value={formatDate(patient.date_of_birth)} />
+              <InfoRow label={t("patients.dateOfBirth")} value={formatDOB(patient.date_of_birth)} />
               <InfoRow label={t("patients.age")} value={age !== null ? `${age} ${t("patients.years")}` : "-"} />
               <InfoRow label={t("patients.sex")} value={patient.sex === "M" ? t("patients.male") : t("patients.female")} />
             </div>

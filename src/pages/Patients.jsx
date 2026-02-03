@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { getPatients, createPatient } from "../api/patients";
 import { getProfile } from "../api/profile";
-import { formatDate } from "../utils/dateFormat";
+import { formatDOB } from "../utils/dateFormat";
 
 // Icons
 const Icons = {
@@ -372,7 +372,7 @@ export default function Patients() {
                         {p.sex === "M" ? t("patients.male") : t("patients.female")}
                       </span>
                     </td>
-                    <td style={tdStyle}>{formatDate(p.date_of_birth)}</td>
+                    <td style={tdStyle}>{formatDOB(p.date_of_birth)}</td>
                     <td style={tdStyle}>{p.phone || "-"}</td>
                     <td style={{ ...tdStyle, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis" }}>{p.address || "-"}</td>
                     <td style={tdStyle}>
