@@ -78,6 +78,37 @@ export function toISODate(value) {
 }
 
 /**
+ * Convert an ISO date-only string (YYYY-MM-DD) to a local Date object.
+ * Uses new Date(year, month-1, day) to avoid UTC-midnight timezone shifts.
+ *
+ * @param {string} dateStr - Date in YYYY-MM-DD format
+ * @returns {Date|null} Local Date object, or null if invalid
+ */
+export function isoDateToLocalDate(dateStr) {
+  if (!dateStr || typeof dateStr !== "string") return null;
+  const parts = dateStr.split("-");
+  if (parts.length !== 3) return null;
+  const [year, month, day] = parts.map(Number);
+  if (!year || !month || !day) return null;
+  return new Date(year, month - 1, day);
+}
+
+/**
+ * Convert a local Date object to an ISO date-only string (YYYY-MM-DD).
+ * Uses getFullYear/getMonth/getDate (local time) to avoid timezone shifts.
+ *
+ * @param {Date} date - A Date object
+ * @returns {string} ISO date string (YYYY-MM-DD), or "" if invalid
+ */
+export function localDateToISODate(date) {
+  if (!date || !(date instanceof Date) || isNaN(date.getTime())) return "";
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+/**
  * Format a time as HH:MM (24-hour)
  * @param {Date|string|number} date - The date/time to format
  * @returns {string} Formatted time string or "-" if invalid

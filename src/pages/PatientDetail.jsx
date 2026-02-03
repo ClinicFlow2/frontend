@@ -5,8 +5,13 @@ import { useTranslation } from "react-i18next";
 import { getPatient, updatePatient, archivePatient, restorePatient } from "../api/patients";
 import { api } from "../api/client";
 import { getProfile } from "../api/profile";
-import { formatDate, formatDOB, formatTime, formatDateTime, formatDateLong } from "../utils/dateFormat";
+import { formatDate, formatDOB, formatTime, formatDateTime, formatDateLong, isoDateToLocalDate, localDateToISODate } from "../utils/dateFormat";
+import DatePicker, { registerLocale } from "react-datepicker";
+import { fr } from "date-fns/locale/fr";
+import "react-datepicker/dist/react-datepicker.css";
 import PatientFiles from "../components/PatientFiles";
+
+registerLocale("fr", fr);
 import PatientPrescriptions from "../components/PatientPrescriptions";
 
 // Icons
@@ -425,10 +430,16 @@ export default function PatientDetail() {
             </div>
             <div>
               <label style={labelStyle}>{t("patients.dateOfBirth")} *</label>
-              <input
-                type="date"
-                value={form.date_of_birth}
-                onChange={(e) => setForm((f) => ({ ...f, date_of_birth: e.target.value }))}
+              <DatePicker
+                selected={isoDateToLocalDate(form.date_of_birth)}
+                onChange={(date) => setForm((f) => ({ ...f, date_of_birth: localDateToISODate(date) }))}
+                dateFormat={i18n.language === "fr" ? "dd-MM-yyyy" : "MM/dd/yyyy"}
+                locale={i18n.language === "fr" ? "fr" : "en"}
+                showYearDropdown
+                showMonthDropdown
+                dropdownMode="select"
+                maxDate={new Date()}
+                placeholderText={i18n.language === "fr" ? "JJ-MM-AAAA" : "MM/DD/YYYY"}
                 required
               />
             </div>
