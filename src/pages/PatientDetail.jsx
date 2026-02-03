@@ -10,9 +10,9 @@ import DatePicker, { registerLocale } from "react-datepicker";
 import { fr } from "date-fns/locale/fr";
 import "react-datepicker/dist/react-datepicker.css";
 import PatientFiles from "../components/PatientFiles";
+import PatientPrescriptions from "../components/PatientPrescriptions";
 
 registerLocale("fr", fr);
-import PatientPrescriptions from "../components/PatientPrescriptions";
 
 // Icons
 const Icons = {
