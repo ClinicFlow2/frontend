@@ -26,7 +26,7 @@ ClinicFlow follows a **separation of concerns** architecture:
 ### Backend Repository
 
 👉 **clinicflow-backend**  
-https://github.com/ClinicFlowHQ/clinicflow-backend
+https://github.com/ClinicFlow2/backend
 
 ---
 
