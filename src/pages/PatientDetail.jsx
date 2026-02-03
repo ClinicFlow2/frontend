@@ -94,10 +94,9 @@ function LoadingSkeleton() {
 export default function PatientDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [patient, setPatient] = useState(null);
-  const { i18n } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [appointments, setAppointments] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -487,7 +486,7 @@ export default function PatientDetail() {
             <h3 style={cardHeaderStyle}>{t("patients.personalInformation")}</h3>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <InfoRow label={t("patients.patientCode")} value={patient.patient_code || "-"} mono />
-              <InfoRow label={t("patients.dateOfBirth")} value={formatDOB(patient.date_of_birth)} />
+              <InfoRow label={t("patients.dateOfBirth")} value={formatDOB(patient.date_of_birth, i18n.language)} />
               <InfoRow label={t("patients.age")} value={age !== null ? `${age} ${t("patients.years")}` : "-"} />
               <InfoRow label={t("patients.sex")} value={patient.sex === "M" ? t("patients.male") : t("patients.female")} />
             </div>

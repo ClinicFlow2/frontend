@@ -64,7 +64,7 @@ function TableSkeleton() {
 
 export default function Patients() {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [isAdmin, setIsAdmin] = useState(false);
   const [patients, setPatients] = useState([]);
@@ -372,7 +372,7 @@ export default function Patients() {
                         {p.sex === "M" ? t("patients.male") : t("patients.female")}
                       </span>
                     </td>
-                    <td style={tdStyle}>{formatDOB(p.date_of_birth)}</td>
+                    <td style={tdStyle}>{formatDOB(p.date_of_birth, i18n.language)}</td>
                     <td style={tdStyle}>{p.phone || "-"}</td>
                     <td style={{ ...tdStyle, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis" }}>{p.address || "-"}</td>
                     <td style={tdStyle}>
