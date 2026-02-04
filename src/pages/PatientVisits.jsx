@@ -429,6 +429,27 @@ export default function PatientVisits() {
             </div>
           </div>
 
+          {/* BMI (auto-calculated, read-only) */}
+          {(() => {
+            const bmi = computeBMI(vitalsForm.weight_kg, vitalsForm.height_cm);
+            const cat = bmiCategory(bmi);
+            if (!bmi) return null;
+            return (
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10 }}>
+                <label style={{ ...label, marginBottom: 0 }}>{t("visitDetail.bmi")}:</label>
+                <span style={{ fontWeight: 600, fontSize: "0.95rem" }}>{bmi}</span>
+                {cat && (
+                  <span style={{
+                    fontSize: "0.75rem", fontWeight: 600, padding: "2px 8px",
+                    borderRadius: "var(--radius-sm)", color: "#fff", background: cat.color,
+                  }}>
+                    {t(`visitDetail.bmi${cat.key.charAt(0).toUpperCase() + cat.key.slice(1)}`)}
+                  </span>
+                )}
+              </div>
+            );
+          })()}
+
           <div className="cf-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 10 }}>
             <div>
               <label style={label}>{t("visitDetail.headCircumferenceCm")}</label>
@@ -809,3 +830,21 @@ const successStyle = {
   fontSize: "0.875rem",
   fontWeight: 500,
 };
+
+/* ---------- BMI helpers ---------- */
+function computeBMI(weightKg, heightCm) {
+  const w = parseFloat(weightKg);
+  const h = parseFloat(heightCm);
+  if (!w || !h || w <= 0 || h <= 0) return null;
+  const hm = h / 100;
+  return (w / (hm * hm)).toFixed(2);
+}
+
+function bmiCategory(bmi) {
+  if (bmi == null) return null;
+  const v = parseFloat(bmi);
+  if (v < 18.5) return { key: "underweight", color: "#3b82f6" };
+  if (v < 25) return { key: "normal", color: "#10b981" };
+  if (v < 30) return { key: "overweight", color: "#f59e0b" };
+  return { key: "obese", color: "#ef4444" };
+}

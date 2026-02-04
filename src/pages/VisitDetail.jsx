@@ -615,6 +615,15 @@ export default function VisitDetail() {
               <VitalsRow label={t("visits.weight")} value={latestVitals.weight_kg != null ? `${latestVitals.weight_kg} kg` : "-"} />
               <VitalsRow label={t("visits.height")} value={latestVitals.height_cm != null ? `${latestVitals.height_cm} cm` : "-"} />
               <VitalsRow
+                label={t("visitDetail.bmi")}
+                value={(() => {
+                  const bmi = computeBMI(latestVitals.weight_kg, latestVitals.height_cm);
+                  if (!bmi) return "-";
+                  const cat = bmiCategory(bmi);
+                  return cat ? `${bmi} (${t(`visitDetail.bmi${cat.key.charAt(0).toUpperCase() + cat.key.slice(1)}`)})` : bmi;
+                })()}
+              />
+              <VitalsRow
                 label={t("visitDetail.headCircumference")}
                 value={latestVitals.head_circumference_cm != null ? `${latestVitals.head_circumference_cm} cm` : "-"}
               />
@@ -643,6 +652,27 @@ export default function VisitDetail() {
                   <Field labelText={t("visitDetail.weightKg")} value={form.weight_kg} onChange={(v) => setForm((f) => ({ ...f, weight_kg: v }))} placeholder="70" />
                   <Field labelText={t("visitDetail.heightCm")} value={form.height_cm} onChange={(v) => setForm((f) => ({ ...f, height_cm: v }))} placeholder="175" />
                 </div>
+
+                {/* BMI (auto-calculated, read-only) */}
+                {(() => {
+                  const bmi = computeBMI(form.weight_kg, form.height_cm);
+                  const cat = bmiCategory(bmi);
+                  if (!bmi) return null;
+                  return (
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <label style={{ ...label, marginBottom: 0 }}>{t("visitDetail.bmi")}:</label>
+                      <span style={{ fontWeight: 600, fontSize: "0.95rem" }}>{bmi}</span>
+                      {cat && (
+                        <span style={{
+                          fontSize: "0.75rem", fontWeight: 600, padding: "2px 8px",
+                          borderRadius: "var(--radius-sm)", color: "#fff", background: cat.color,
+                        }}>
+                          {t(`visitDetail.bmi${cat.key.charAt(0).toUpperCase() + cat.key.slice(1)}`)}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 <div className="cf-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                   <Field labelText={t("visitDetail.bpSystolic")} value={form.bp_systolic} onChange={(v) => setForm((f) => ({ ...f, bp_systolic: v }))} placeholder="120" />
@@ -841,6 +871,27 @@ export default function VisitDetail() {
                   <Field labelText={t("visitDetail.weightKg")} value={vitalsEditForm.weight_kg} onChange={(v) => setVitalsEditForm((f) => ({ ...f, weight_kg: v }))} placeholder="70" />
                   <Field labelText={t("visitDetail.heightCm")} value={vitalsEditForm.height_cm} onChange={(v) => setVitalsEditForm((f) => ({ ...f, height_cm: v }))} placeholder="175" />
                 </div>
+
+                {/* BMI (auto-calculated, read-only) */}
+                {(() => {
+                  const bmi = computeBMI(vitalsEditForm.weight_kg, vitalsEditForm.height_cm);
+                  const cat = bmiCategory(bmi);
+                  if (!bmi) return null;
+                  return (
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <label style={{ ...label, marginBottom: 0 }}>{t("visitDetail.bmi")}:</label>
+                      <span style={{ fontWeight: 600, fontSize: "0.95rem" }}>{bmi}</span>
+                      {cat && (
+                        <span style={{
+                          fontSize: "0.75rem", fontWeight: 600, padding: "2px 8px",
+                          borderRadius: "var(--radius-sm)", color: "#fff", background: cat.color,
+                        }}>
+                          {t(`visitDetail.bmi${cat.key.charAt(0).toUpperCase() + cat.key.slice(1)}`)}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                   <Field labelText={t("visitDetail.bpSystolic")} value={vitalsEditForm.bp_systolic} onChange={(v) => setVitalsEditForm((f) => ({ ...f, bp_systolic: v }))} placeholder="120" />
@@ -1087,3 +1138,21 @@ const successStyle = {
   marginLeft: "auto",
   marginRight: "auto",
 };
+
+/* ---------- BMI helpers ---------- */
+function computeBMI(weightKg, heightCm) {
+  const w = parseFloat(weightKg);
+  const h = parseFloat(heightCm);
+  if (!w || !h || w <= 0 || h <= 0) return null;
+  const hm = h / 100;
+  return (w / (hm * hm)).toFixed(2);
+}
+
+function bmiCategory(bmi) {
+  if (bmi == null) return null;
+  const v = parseFloat(bmi);
+  if (v < 18.5) return { key: "underweight", color: "#3b82f6" };
+  if (v < 25) return { key: "normal", color: "#10b981" };
+  if (v < 30) return { key: "overweight", color: "#f59e0b" };
+  return { key: "obese", color: "#ef4444" };
+}
