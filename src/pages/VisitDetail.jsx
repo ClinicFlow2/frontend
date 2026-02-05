@@ -158,10 +158,18 @@ export default function VisitDetail() {
   const latestVitals = vitalsSorted.length > 0 ? vitalsSorted[0] : null;
 
   // Check if current user can edit this visit (owner or admin)
+  // Legacy fallback: if visit.created_by is null, check patient_created_by
   const canEdit = useMemo(() => {
     if (isAdmin) return true;
     if (!visit || !currentUserId) return false;
-    return visit.created_by === currentUserId;
+
+    // Normal rule: visit creator
+    if (visit.created_by != null) {
+      return visit.created_by === currentUserId;
+    }
+
+    // Legacy fallback: patient creator (for visits with null created_by)
+    return visit.patient_created_by === currentUserId;
   }, [isAdmin, visit, currentUserId]);
 
   function toNumberOrNull(value, { int = false } = {}) {
