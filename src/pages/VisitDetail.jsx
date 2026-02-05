@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { getPatient } from "../api/patients";
 import { createVitals, getVisit, getVitals, updateVitals, updateVisit, downloadPrescriptionPdf, downloadVisitSummaryPdf } from "../api/visits";
 import { getPrescriptions, unwrapListResults } from "../api/prescriptions";
+import { getProfile } from "../api/profile";
 import { formatDateTime } from "../utils/dateFormat";
 
 export default function VisitDetail() {
@@ -56,6 +57,10 @@ export default function VisitDetail() {
   const [vitalsEditSaving, setVitalsEditSaving] = useState(false);
   const [vitalsEditError, setVitalsEditError] = useState("");
 
+  // Ownership check state
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
   const [form, setForm] = useState({
     measured_at: "",
     weight_kg: "",
@@ -95,15 +100,22 @@ export default function VisitDetail() {
     setLoading(true);
     setError("");
     try {
-      const [p, v, vit] = await Promise.all([
+      const [p, v, vit, profile] = await Promise.all([
         getPatient(id),
         getVisit(visitId),
         getVitals({ visitId }), // GET /api/visits/vitals/?visit=<id>
+        getProfile().catch(() => null), // Get current user info
       ]);
 
       setPatient(p);
       setVisit(v);
       setVitals(normalizeVitals(vit));
+
+      // Set ownership state
+      if (profile) {
+        setCurrentUserId(profile.id);
+        setIsAdmin(profile.profile?.role === "admin");
+      }
 
       // Populate edit form with visit data
       setEditForm({
@@ -144,6 +156,13 @@ export default function VisitDetail() {
   }, [vitals]);
 
   const latestVitals = vitalsSorted.length > 0 ? vitalsSorted[0] : null;
+
+  // Check if current user can edit this visit (owner or admin)
+  const canEdit = useMemo(() => {
+    if (isAdmin) return true;
+    if (!visit || !currentUserId) return false;
+    return visit.created_by === currentUserId;
+  }, [isAdmin, visit, currentUserId]);
 
   function toNumberOrNull(value, { int = false } = {}) {
     if (value == null) return null;
@@ -424,7 +443,7 @@ export default function VisitDetail() {
         <Card
           title={editMode ? t("visitDetail.visitDetails") : t("visitDetail.visitInformation")}
           right={
-            !editMode ? (
+            !editMode && canEdit ? (
               <button onClick={() => setEditMode(true)} style={btn}>
                 {t("common.edit")}
               </button>
@@ -591,9 +610,11 @@ export default function VisitDetail() {
           title={t("visits.vitals")}
           subtitle={latestVitals?.measured_at ? `${t("visitDetail.latest")}: ${formatDateTime(latestVitals.measured_at)}` : t("visitDetail.noVitalsRecorded")}
           right={
-            <button onClick={() => setShowVitalsForm((s) => !s)} style={btn}>
-              {showVitalsForm ? t("common.close") : t("visitDetail.addVitals")}
-            </button>
+            canEdit ? (
+              <button onClick={() => setShowVitalsForm((s) => !s)} style={btn}>
+                {showVitalsForm ? t("common.close") : t("visitDetail.addVitals")}
+              </button>
+            ) : null
           }
         >
           {!latestVitals ? (
@@ -728,9 +749,11 @@ export default function VisitDetail() {
                       <td style={td}>{x.heart_rate_bpm != null ? x.heart_rate_bpm : "-"}</td>
                       <td style={td}>{x.oxygen_saturation_pct != null ? `${x.oxygen_saturation_pct}%` : "-"}</td>
                       <td style={{ ...td, textAlign: "right" }}>
-                        <button onClick={() => openVitalsEdit(x)} style={btnSmall}>
-                          {t("common.edit")}
-                        </button>
+                        {canEdit && (
+                          <button onClick={() => openVitalsEdit(x)} style={btnSmall}>
+                            {t("common.edit")}
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
