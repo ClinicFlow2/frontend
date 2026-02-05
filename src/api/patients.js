@@ -40,6 +40,11 @@ export async function restorePatient(id) {
   return res.data;
 }
 
+export async function getLatestMedicalHistory(patientId) {
+  const res = await api.get(`/api/patients/${patientId}/latest-medical-history/`);
+  return res.data;
+}
+
 // ============ Patient Files ============
 
 export async function getPatientFiles(patientId) {

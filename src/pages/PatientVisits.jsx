@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { getPatient } from "../api/patients";
+import { getPatient, getLatestMedicalHistory } from "../api/patients";
 import { createVisit, createVitals, getVisits, deleteVisit } from "../api/visits";
 import { formatDateTime } from "../utils/dateFormat";
 
@@ -54,9 +54,18 @@ export default function PatientVisits() {
     setLoading(true);
     setError("");
     try {
-      const [p, v] = await Promise.all([getPatient(id), getVisits({ patientId: id })]);
+      const [p, v, mh] = await Promise.all([
+        getPatient(id),
+        getVisits({ patientId: id }),
+        getLatestMedicalHistory(id).catch(() => ({ medical_history: "" })),
+      ]);
       setPatient(p);
       setVisits(Array.isArray(v) ? v : []);
+
+      // Prefill medical_history only if the field is still empty
+      if (mh.medical_history) {
+        setForm((f) => f.medical_history ? f : { ...f, medical_history: mh.medical_history });
+      }
     } catch (err) {
       console.log("PATIENT VISITS LOAD ERROR:", err?.response?.data || err);
       setError(t("patientVisits.loadError"));
